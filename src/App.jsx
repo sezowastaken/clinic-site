@@ -1,17 +1,25 @@
+import { Routes, Route } from "react-router-dom";
+import SiteLayout from "./layouts/SiteLayout";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Results from "./pages/Results";
+import Videos from "./pages/Videos";
+import Contact from "./pages/Contact";
+import KVKK from "./pages/KVKK";
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="p-10 rounded-2xl bg-white shadow-xl max-w-lg w-[90%]">
-        <h1 className="text-3xl font-bold text-emerald-700 mb-4">
-          Tailwind v4 gerçekten çalışıyor 🎉
-        </h1>
-        <p className="text-slate-600 leading-relaxed">
-          Bu kutu Tailwind sınıflarıyla stillendi (bg-slate-100, shadow-xl, rounded-2xl vb.).
-        </p>
-        <button className="mt-6 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
-          Buton örneği
-        </button>
-      </div>
-    </div>
+    <Routes>
+      <Route element={<SiteLayout />}>
+        <Route index element={<Home />} />
+        <Route path="/hakkinda" element={<About />} />
+        <Route path="/hizmetler" element={<Services />} />
+        <Route path="/sonuclar" element={<Results />} />
+        <Route path="/videolar" element={<Videos />} />
+        <Route path="/iletisim" element={<Contact />} />
+        <Route path="/kvkk" element={<KVKK />} />
+      </Route>
+    </Routes>
   );
 }
