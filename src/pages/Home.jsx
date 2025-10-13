@@ -1,25 +1,161 @@
 import { Link } from "react-router-dom";
 
+/** Basit i18n – şu an TR */
+const lang = "tr";
+const copy = {
+  tr: {
+    name: "Dr. Rabiye Bulan",
+    heroTitle: "Uzmanlık ve Özenle Estetik Cerrahi",
+    heroDesc:
+      "Doktorun yaklaşımı ve deneyimine kısa bir giriş. Doğal sonuçlara odaklı, board sertifikalı plastik cerrahi.",
+    btnBook: "Randevu Al",
+    btnCallMe: "Geri Aranmak İstiyorum",
+    servicesTitle: "Hizmetlerimiz",
+    services: [
+      {
+        title: "Burun Estetiği (Rhinoplasty)",
+        desc: "Yüzle uyumlu, doğal ve dengeli bir burun profili.",
+        src: "/assets/services/rhinoplasty.png",
+        alt: "Burun estetiğini çağrıştıran görsel",
+      },
+      {
+        title: "Meme Büyütme",
+        desc: "Doğal hatları koruyarak özgüveni artıran sonuçlar.",
+        src: "/assets/services/breast-augmentation.png",
+        alt: "Meme büyütmeyi çağrıştıran görsel",
+      },
+      {
+        title: "Liposuction",
+        desc: "Vücut şekillendirme ve inatçı yağların azaltılması.",
+        src: "/assets/services/liposuction.png",
+        alt: "Liposuction’ı çağrıştıran görsel",
+      },
+      {
+        title: "Yüz Germe (Facelift)",
+        desc: "Daha genç, dinç ve taze bir yüz görünümü.",
+        src: "/assets/services/facelift.png",
+        alt: "Yüz germeyi çağrıştıran görsel",
+      },
+    ],
+    workTitle: "Çalışmalarımızdan",
+    work: [
+      { src: "/assets/general/work-01.png", alt: "Hasta ile danışma görüşmesi" },
+      { src: "/assets/general/work-02.png", alt: "Estetik prosedürün illüstrasyonu" },
+      { src: "/assets/general/work-03.png", alt: "Mutlu hasta yorumu görseli" },
+    ],
+  },
+};
+const t = copy[lang];
+
 export default function Home() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <section className="grid gap-8 lg:grid-cols-2 items-center">
+    <>
+      {/* Hero */}
+      <section
+        id="hero"
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 grid gap-10 lg:grid-cols-2 lg:items-center"
+      >
         <div>
-          <h1 className="text-4xl font-bold mb-4">Estetik & Güven</h1>
-          <p className="text-slate-600 mb-6">
-            Kısa değer önerisi. Randevu ve iletişim için hızlı aksiyon.
+          <h1 className="text-4xl/tight sm:text-5xl lg:text-6xl font-extrabold">
+            {t.heroTitle}
+          </h1>
+          <p className="mt-4 text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
+            {t.heroDesc}
           </p>
-          <div className="flex gap-3">
-            <Link to="/iletisim" className="px-4 py-2 rounded-lg bg-slate-900 text-white">
-              Randevu Al
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/randevu"
+              className="inline-flex h-12 items-center justify-center rounded-lg px-6 font-semibold text-white bg-[var(--color-primary)] shadow hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+            >
+              {t.btnBook}
             </Link>
-            <a href="https://wa.me/90XXXXXXXXXX" className="px-4 py-2 rounded-lg border">
-              WhatsApp
-            </a>
+            <Link
+              to="/iletisim"
+              className="inline-flex h-12 items-center justify-center rounded-lg px-6 font-semibold border border-[var(--color-border)] bg-[var(--color-secondary)] hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+            >
+              {t.btnCallMe}
+            </Link>
           </div>
         </div>
-        <div className="aspect-video rounded-2xl bg-slate-200" />
+
+        <div>
+          <div className="aspect-[4/3] rounded-xl overflow-hidden shadow group">
+            <img
+              src="/assets/general/rabiyebulan.jpg"
+              alt={`${t.name} portre görseli`}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              loading="eager"
+            />
+          </div>
+        </div>
       </section>
-    </div>
+
+      {/* Services */}
+      <section id="services" className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold tracking-tight text-center">{t.servicesTitle}</h2>
+
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {t.services.map((item) => (
+              <article
+                key={item.title}
+                className="rounded-xl p-6 text-center bg-[var(--color-bg)] border border-[var(--color-border)] shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition will-change-transform"
+              >
+                <div className="aspect-square rounded-lg overflow-hidden mb-4 group">
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="font-semibold">{item.title}</h3>
+                <p className="mt-1 text-sm text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
+                  {item.desc}
+                </p>
+                <div className="mt-4">
+                  <Link
+                    to="/hizmetler"
+                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-secondary)] hover:-translate-y-0.5 active:translate-y-0 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+                  >
+                    Detaylar
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section id="gallery" className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold tracking-tight text-center">{t.workTitle}</h2>
+
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+            {t.work.map((g) => (
+              <div
+                key={g.src}
+                className="
+                  overflow-hidden rounded-lg shadow group
+                  w-[90%] h-[220px]
+                  sm:w-[300px] sm:h-[240px]
+                  lg:w-[400px] lg:h-[360px]
+                  transition-all duration-300
+                "
+              >
+                <img
+                  src={g.src}
+                  alt={g.alt}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

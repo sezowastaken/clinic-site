@@ -1,5 +1,5 @@
-import { Routes, Route } from "react-router-dom";
-import SiteLayout from "./layouts/SiteLayout";
+import { Routes, Route, Navigate } from "react-router-dom";
+import SiteLayout from "./layout/SiteLayout.jsx";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -20,6 +20,8 @@ export default function App() {
         <Route path="/iletisim" element={<Contact />} />
         <Route path="/kvkk" element={<KVKK />} />
       </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
