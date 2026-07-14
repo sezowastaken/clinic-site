@@ -1,16 +1,54 @@
-# React + Vite
+# Clinic Site
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Website and appointment management system for a single-doctor aesthetic surgery clinic.
 
-Currently, two official plugins are available:
+The project runs entirely through Docker Compose. The host machine does not need Node.js or npm installed.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Prerequisites
 
-## React Compiler
+- Docker
+- Docker Compose
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Setup
 
-## Expanding the ESLint configuration
+Copy the environment example and adjust values if needed:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cp .env.example .env
+```
+
+## Start the stack
+
+```bash
+docker compose up --build
+```
+
+- Frontend: [http://localhost:8080](http://localhost:8080)
+- API health check (through the frontend proxy): [http://localhost:8080/api/health](http://localhost:8080/api/health)
+
+## Stop the stack
+
+```bash
+docker compose down
+```
+
+Data in PostgreSQL persists in a named volume and survives `docker compose down`. It is only removed by the destructive `docker compose down -v`.
+
+## Other useful commands
+
+```bash
+docker compose up -d
+docker compose logs -f
+docker compose logs -f web
+docker compose logs -f api
+docker compose logs -f db
+docker compose exec db psql -U clinic -d clinic
+```
+
+## Current scope
+
+- `web`: React/Vite frontend with hot reload, proxying `/api` to the API service.
+- `api`: minimal Express API exposing `GET /api/health`, which also checks PostgreSQL connectivity.
+- `db`: PostgreSQL with a named volume.
+
+No migrations, database tables, authentication, appointment logic, admin UI, or production deployment exist yet.
