@@ -64,13 +64,6 @@ export default function SiteLayout() {
             >
               Randevu Al
             </Link>
-            {/* Temporary: admin panel entry point, remove once admin auth/nav is finalized */}
-            <Link
-              to="/admin"
-              className="inline-flex h-10 items-center justify-center rounded-lg px-4 font-medium text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
-            >
-              Admin
-            </Link>
           </div>
         </div>
       </header>
@@ -100,6 +93,14 @@ export default function SiteLayout() {
               Kullanım Şartları
             </a>
           </div>
+        </div>
+        <div className="mx-auto max-w-7xl px-4 mt-4 flex justify-center sm:justify-end">
+          <Link
+            to="/admin/login"
+            className="text-xs text-[color-mix(in srgb, var(--color-text) 40%, transparent)] hover:text-[color-mix(in srgb, var(--color-text) 65%, transparent)] transition"
+          >
+            Personel Girişi
+          </Link>
         </div>
       </footer>
     </div>

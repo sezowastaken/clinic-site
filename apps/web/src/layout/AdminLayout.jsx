@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { doctor } from "../content/doctor";
 import { createAppointmentId, createSeedAppointments } from "../pages/admin/appointments";
 import AppointmentFormModal from "../pages/admin/AppointmentFormModal";
 import { createSeedRequests } from "../pages/admin/requests";
+import { useAuth } from "../auth/AuthContext.jsx";
 
 const NAV_ITEMS = [
   { label: "Özet", to: "/admin", enabled: true },
@@ -63,6 +64,8 @@ function SidebarNav({ onNavigate, pendingRequestsCount }) {
 }
 
 export default function AdminLayout() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [appointments, setAppointments] = useState(() => createSeedAppointments());
   const [modalState, setModalState] = useState({ open: false, initialDate: null, initialTime: null });
@@ -101,12 +104,24 @@ export default function AdminLayout() {
 
   const pendingRequestsCount = requests.filter((r) => r.status === "Bekliyor").length;
 
+  async function handleLogout() {
+    await logout();
+    navigate("/admin/login", { replace: true });
+  }
+
   return (
     <div className="min-h-dvh flex bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-60 md:shrink-0 md:flex-col border-r border-[var(--color-border)] p-4">
         <div className="font-semibold mb-6">{doctor.name}</div>
         <SidebarNav pendingRequestsCount={pendingRequestsCount} />
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-auto h-9 px-3 rounded-lg text-sm font-medium text-left text-red-700 hover:bg-red-50 transition"
+        >
+          Çıkış Yap
+        </button>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -143,6 +158,13 @@ export default function AdminLayout() {
           <div className="md:hidden border-b border-[var(--color-border)] p-4">
             <div className="font-semibold mb-3">{doctor.name}</div>
             <SidebarNav onNavigate={() => setMobileOpen(false)} pendingRequestsCount={pendingRequestsCount} />
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="mt-3 h-9 px-3 w-full rounded-lg text-sm font-medium text-left text-red-700 hover:bg-red-50 transition"
+            >
+              Çıkış Yap
+            </button>
           </div>
         )}
 
