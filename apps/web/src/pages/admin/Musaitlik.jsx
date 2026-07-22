@@ -1,13 +1,15 @@
-import { useMemo, useState } from "react";
-import { toDateKey } from "./appointments";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { addDays, toDateKey } from "./appointments";
 import {
   REASONS,
   buildMonthGrid,
   getDayStatus,
   validateNewRange,
-  createRangeId,
-  cloneRanges,
-  createSeedAvailability,
+  combineDateAndTime,
+  mapWindowFromApi,
+  fetchAvailability,
+  createAvailability,
+  deleteAvailability,
 } from "./availability";
 
 const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
@@ -34,7 +36,7 @@ const STATUS_BADGE_STYLES = {
   full: "bg-green-100 text-green-800",
 };
 
-function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, onCopyTo }) {
+function DayEditor({ date, entry, saving, actionError, onAddRange, onRemoveRange, onMarkUnavailable, onCopyTo }) {
   const [start, setStart] = useState("10:00");
   const [end, setEnd] = useState("13:00");
   const [error, setError] = useState("");
@@ -70,6 +72,8 @@ function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, 
         </p>
       )}
 
+      {actionError && <p className="mt-2 text-sm text-red-600">{actionError}</p>}
+
       <div className="mt-4">
         <h3 className="text-sm font-semibold mb-2">Müsait saat aralıkları</h3>
         {entry.ranges.length === 0 ? (
@@ -88,8 +92,9 @@ function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, 
                 </span>
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => onRemoveRange(r.id)}
-                  className="text-xs font-medium text-red-700 hover:underline"
+                  className="text-xs font-medium text-red-700 hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Kaldır
                 </button>
@@ -119,10 +124,11 @@ function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, 
           </div>
           <button
             type="button"
+            disabled={saving}
             onClick={handleAdd}
-            className="h-9 px-4 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
+            className="h-9 px-4 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
           >
-            Ekle
+            {saving ? "Kaydediliyor..." : "Ekle"}
           </button>
         </div>
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
@@ -148,8 +154,9 @@ function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, 
           </div>
           <button
             type="button"
+            disabled={saving}
             onClick={() => onMarkUnavailable(reason)}
-            className="h-9 px-4 rounded-lg text-sm font-medium border border-red-200 text-red-700 hover:bg-red-50 transition"
+            className="h-9 px-4 rounded-lg text-sm font-medium border border-red-200 text-red-700 hover:bg-red-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Tüm Günü Müsait Değil Yap
           </button>
@@ -170,7 +177,7 @@ function DayEditor({ date, entry, onAddRange, onRemoveRange, onMarkUnavailable, 
           </div>
           <button
             type="button"
-            disabled={!copyTarget}
+            disabled={!copyTarget || saving}
             onClick={() => onCopyTo(copyTarget)}
             className="h-9 px-4 rounded-lg text-sm font-medium border border-[var(--color-border)] hover:bg-[var(--color-secondary)] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
@@ -189,11 +196,45 @@ export default function Musaitlik() {
     return d;
   });
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [availability, setAvailability] = useState(() => createSeedAvailability());
+  const [availability, setAvailability] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   const grid = useMemo(() => buildMonthGrid(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
   const selectedKey = toDateKey(selectedDate);
   const selectedEntry = availability[selectedKey] ?? { ranges: [], reason: "" };
+
+  const loadAvailability = useCallback(async () => {
+    const dates = buildMonthGrid(viewDate.getFullYear(), viewDate.getMonth()).filter(Boolean);
+    const rangeStart = dates[0];
+    const rangeEnd = addDays(dates[dates.length - 1], 1);
+
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchAvailability({
+        dateFrom: rangeStart.toISOString(),
+        dateTo: rangeEnd.toISOString(),
+      });
+      const map = {};
+      data.items.forEach((item) => {
+        const w = mapWindowFromApi(item);
+        if (!map[w.dateKey]) map[w.dateKey] = { ranges: [], reason: "" };
+        map[w.dateKey].ranges.push({ id: w.id, start: w.start, end: w.end });
+      });
+      setAvailability(map);
+    } catch (err) {
+      setError(err.message || "Müsaitlik yüklenemedi.");
+    } finally {
+      setLoading(false);
+    }
+  }, [viewDate]);
+
+  useEffect(() => {
+    loadAvailability();
+  }, [loadAvailability]);
 
   function goToMonth(offset) {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + offset, 1));
@@ -205,28 +246,38 @@ export default function Musaitlik() {
     setSelectedDate(today);
   }
 
-  function updateEntry(key, updater) {
-    setAvailability((prev) => {
-      const current = prev[key] ?? { ranges: [], reason: "" };
-      return { ...prev, [key]: updater(current) };
-    });
+  async function handleAddRange({ start, end }) {
+    setActionError("");
+    setSaving(true);
+    try {
+      await createAvailability({
+        startsAt: combineDateAndTime(selectedDate, start).toISOString(),
+        endsAt: combineDateAndTime(selectedDate, end).toISOString(),
+      });
+      await loadAvailability();
+    } catch (err) {
+      setActionError(
+        err.code === "AVAILABILITY_CONFLICT" ? "Bu saat aralığı mevcut bir aralıkla çakışıyor." : err.message || "Kaydedilemedi."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleAddRange({ start, end }) {
-    updateEntry(selectedKey, (entry) => ({
-      ranges: [...entry.ranges, { id: createRangeId(), start, end }],
-      reason: "",
-    }));
+  async function handleRemoveRange(rangeId) {
+    setActionError("");
+    setSaving(true);
+    try {
+      await deleteAvailability(rangeId);
+      await loadAvailability();
+    } catch (err) {
+      setActionError(err.message || "Kaldırılamadı.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleRemoveRange(rangeId) {
-    updateEntry(selectedKey, (entry) => ({
-      ...entry,
-      ranges: entry.ranges.filter((r) => r.id !== rangeId),
-    }));
-  }
-
-  function handleMarkUnavailable(reason) {
+  async function handleMarkUnavailable(reason) {
     const entry = availability[selectedKey];
     if (entry && entry.ranges.length > 0) {
       const confirmed = window.confirm(
@@ -234,22 +285,54 @@ export default function Musaitlik() {
       );
       if (!confirmed) return;
     }
-    setAvailability((prev) => ({ ...prev, [selectedKey]: { ranges: [], reason } }));
+
+    setActionError("");
+    setSaving(true);
+    try {
+      const ranges = entry?.ranges ?? [];
+      await Promise.all(ranges.map((r) => deleteAvailability(r.id)));
+      await loadAvailability();
+    } catch (err) {
+      setActionError(err.message || "İşlem başarısız oldu.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleCopyTo(targetDateInput) {
+  async function handleCopyTo(targetDateInput) {
     const [year, month, day] = targetDateInput.split("-").map(Number);
-    const targetKey = toDateKey(new Date(year, month - 1, day));
-    const source = availability[selectedKey] ?? { ranges: [], reason: "" };
-    setAvailability((prev) => ({
-      ...prev,
-      [targetKey]: { ranges: cloneRanges(source.ranges), reason: source.reason },
-    }));
+    const targetDate = new Date(year, month - 1, day);
+    const source = availability[selectedKey] ?? { ranges: [] };
+
+    setActionError("");
+    setSaving(true);
+    try {
+      await Promise.all(
+        source.ranges.map((r) =>
+          createAvailability({
+            startsAt: combineDateAndTime(targetDate, r.start).toISOString(),
+            endsAt: combineDateAndTime(targetDate, r.end).toISOString(),
+          })
+        )
+      );
+      await loadAvailability();
+    } catch (err) {
+      setActionError(
+        err.code === "AVAILABILITY_CONFLICT" ? "Hedef günde çakışan bir aralık var." : err.message || "Kopyalanamadı."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold">Müsaitlik</h1>
+
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {loading && (
+        <p className="mt-4 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Yükleniyor...</p>
+      )}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6">
         {/* Monthly calendar */}
@@ -333,6 +416,8 @@ export default function Musaitlik() {
           key={selectedKey}
           date={selectedDate}
           entry={selectedEntry}
+          saving={saving}
+          actionError={actionError}
           onAddRange={handleAddRange}
           onRemoveRange={handleRemoveRange}
           onMarkUnavailable={handleMarkUnavailable}

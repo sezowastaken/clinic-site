@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "./Modal";
-import { STATUSES, SOURCES } from "./appointments";
+import { STATUS_OPTIONS, SOURCE_OPTIONS } from "./appointments";
 import { services } from "../../content/services";
 
 const DURATIONS = [30, 45, 60, 90, 120];
@@ -11,6 +12,8 @@ function toInputDate(date) {
 }
 
 function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const {
     register,
     handleSubmit,
@@ -20,32 +23,41 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
       name: "",
       phone: "",
       email: "",
-      service: services[0]?.title ?? "",
+      service: services[0]?.slug ?? "",
       date: toInputDate(initialDate),
       startTime: initialTime ?? "09:00",
       duration: "60",
-      source: SOURCES[0],
-      status: "Onaylandı",
+      source: SOURCE_OPTIONS[0]?.value ?? "phone",
+      status: "confirmed",
       patientNote: "",
       internalNote: "",
     },
   });
 
-  function submit(data) {
+  async function submit(data) {
+    setSubmitError("");
     const [year, month, day] = data.date.split("-").map(Number);
-    onSubmit({
-      patient: data.name,
+    const [hour, minute] = data.startTime.split(":").map(Number);
+    const startsAt = new Date(year, month - 1, day, hour, minute).toISOString();
+
+    setSubmitting(true);
+    const result = await onSubmit({
+      patientName: data.name,
       phone: data.phone,
-      email: data.email,
-      service: data.service,
-      date: new Date(year, month - 1, day),
-      time: data.startTime,
-      duration: Number(data.duration),
-      status: data.status,
+      email: data.email || undefined,
+      serviceSlug: data.service,
+      startsAt,
+      durationMinutes: Number(data.duration),
       source: data.source,
-      patientNote: data.patientNote,
-      internalNote: data.internalNote,
+      status: data.status,
+      patientNote: data.patientNote || undefined,
+      internalNote: data.internalNote || undefined,
     });
+    setSubmitting(false);
+
+    if (!result?.ok) {
+      setSubmitError(result?.error || "Randevu kaydedilemedi.");
+    }
   }
 
   return (
@@ -69,7 +81,7 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
           <label className="block text-sm mb-1">İşlem</label>
           <select className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("service", { required: true })}>
             {services.map((s) => (
-              <option key={s.slug} value={s.title}>
+              <option key={s.slug} value={s.slug}>
                 {s.title}
               </option>
             ))}
@@ -104,9 +116,9 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
         <div>
           <label className="block text-sm mb-1">Kaynak</label>
           <select className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("source", { required: true })}>
-            {SOURCES.map((s) => (
-              <option key={s} value={s}>
-                {s}
+            {SOURCE_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
               </option>
             ))}
           </select>
@@ -114,9 +126,9 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
         <div>
           <label className="block text-sm mb-1">Durum</label>
           <select className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("status", { required: true })}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
               </option>
             ))}
           </select>
@@ -132,6 +144,8 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
         <textarea rows="2" className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("internalNote")} />
       </div>
 
+      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+
       <div className="flex justify-end gap-3 pt-2">
         <button
           type="button"
@@ -142,9 +156,10 @@ function AppointmentForm({ initialDate, initialTime, onCancel, onSubmit }) {
         </button>
         <button
           type="submit"
-          className="h-10 px-5 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
+          disabled={submitting}
+          className="h-10 px-5 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
         >
-          Randevuyu Kaydet
+          {submitting ? "Kaydediliyor..." : "Randevuyu Kaydet"}
         </button>
       </div>
     </form>

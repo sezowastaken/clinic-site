@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "./Modal";
 import { services } from "../../content/services";
@@ -7,29 +8,40 @@ function toInputDate(date) {
 }
 
 function RequestEditForm({ request, onCancel, onSave }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const { register, handleSubmit } = useForm({
     defaultValues: {
       name: request.patient,
       phone: request.phone,
       email: request.email,
-      service: request.service,
+      service: request.serviceSlug,
       date: toInputDate(request.requestedDate),
       time: request.requestedTime,
       internalNote: request.internalNote,
     },
   });
 
-  function submit(data) {
+  async function submit(data) {
+    setSubmitError("");
     const [year, month, day] = data.date.split("-").map(Number);
-    onSave(request.id, {
-      patient: data.name,
+    const [hour, minute] = data.time.split(":").map(Number);
+    const startsAt = new Date(year, month - 1, day, hour, minute).toISOString();
+
+    setSubmitting(true);
+    const ok = await onSave(request.id, {
+      patientName: data.name,
       phone: data.phone,
-      email: data.email,
-      service: data.service,
-      requestedDate: new Date(year, month - 1, day),
-      requestedTime: data.time,
-      internalNote: data.internalNote,
+      email: data.email || undefined,
+      serviceSlug: data.service,
+      startsAt,
+      internalNote: data.internalNote || undefined,
     });
+    setSubmitting(false);
+
+    if (!ok) {
+      setSubmitError("Talep kaydedilemedi.");
+    }
   }
 
   return (
@@ -51,7 +63,7 @@ function RequestEditForm({ request, onCancel, onSave }) {
           <label className="block text-sm mb-1">İşlem</label>
           <select className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("service", { required: true })}>
             {services.map((s) => (
-              <option key={s.slug} value={s.title}>
+              <option key={s.slug} value={s.slug}>
                 {s.title}
               </option>
             ))}
@@ -80,6 +92,8 @@ function RequestEditForm({ request, onCancel, onSave }) {
         <textarea rows="2" className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("internalNote")} />
       </div>
 
+      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+
       <div className="flex justify-end gap-3 pt-2">
         <button
           type="button"
@@ -90,9 +104,10 @@ function RequestEditForm({ request, onCancel, onSave }) {
         </button>
         <button
           type="submit"
-          className="h-10 px-5 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
+          disabled={submitting}
+          className="h-10 px-5 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
         >
-          Kaydet ve Onayla
+          {submitting ? "Kaydediliyor..." : "Kaydet ve Onayla"}
         </button>
       </div>
     </form>
@@ -108,9 +123,10 @@ export default function RequestEditModal({ request, onClose, onSave }) {
         key={request.id}
         request={request}
         onCancel={onClose}
-        onSave={(id, data) => {
-          onSave(id, data);
-          onClose();
+        onSave={async (id, data) => {
+          const ok = await onSave(id, data);
+          if (ok) onClose();
+          return ok;
         }}
       />
     </Modal>

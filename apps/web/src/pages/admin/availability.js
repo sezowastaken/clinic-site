@@ -1,14 +1,9 @@
-import { addDays, toDateKey, startMinutes } from "./appointments";
+import { toDateKey, startMinutes } from "./appointments";
 
 export const REASONS = ["Ameliyat", "İzin", "Toplantı", "Klinik kapalı"];
 
 const WORK_START_MIN = startMinutes("09:00");
 const WORK_END_MIN = startMinutes("18:00");
-
-let nextRangeId = 1;
-export function createRangeId() {
-  return `range-${nextRangeId++}`;
-}
 
 export function buildMonthGrid(year, month) {
   const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first
@@ -54,35 +49,68 @@ export function validateNewRange(existingRanges, start, end) {
   return null;
 }
 
-export function cloneRanges(ranges) {
-  return ranges.map((r) => ({ ...r, id: createRangeId() }));
+export function combineDateAndTime(date, time) {
+  const [hour, minute] = time.split(":").map(Number);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);
 }
 
-/** Mock availability seed relative to today; days without an entry are unavailable by default. */
-export function createSeedAvailability() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const map = {};
+function formatTime(date) {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
 
-  map[toDateKey(addDays(today, 1))] = {
-    ranges: [{ id: createRangeId(), start: "09:00", end: "18:00" }],
-    reason: "",
+export function mapWindowFromApi(item) {
+  const start = new Date(item.startsAt);
+  const end = new Date(item.endsAt);
+  return {
+    id: item.id,
+    dateKey: toDateKey(start),
+    start: formatTime(start),
+    end: formatTime(end),
+    reason: item.reason || "",
   };
-  map[toDateKey(addDays(today, 2))] = {
-    ranges: [
-      { id: createRangeId(), start: "10:00", end: "13:00" },
-      { id: createRangeId(), start: "15:00", end: "18:00" },
-    ],
-    reason: "",
-  };
-  map[toDateKey(addDays(today, 3))] = {
-    ranges: [],
-    reason: "Ameliyat",
-  };
-  map[toDateKey(addDays(today, 5))] = {
-    ranges: [{ id: createRangeId(), start: "09:00", end: "13:00" }],
-    reason: "",
-  };
+}
 
-  return map;
+async function request(path, options = {}) {
+  const res = await fetch(path, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    body = null;
+  }
+
+  if (!res.ok) {
+    const error = new Error(body?.error?.message || "İstek başarısız oldu.");
+    error.code = body?.error?.code;
+    error.status = res.status;
+    throw error;
+  }
+
+  return body;
+}
+
+export function fetchAvailability(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") query.set(key, value);
+  });
+  const qs = query.toString();
+  return request(`/api/admin/availability${qs ? `?${qs}` : ""}`);
+}
+
+export function createAvailability(payload) {
+  return request("/api/admin/availability", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function updateAvailability(id, payload) {
+  return request(`/api/admin/availability/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+export function deleteAvailability(id) {
+  return request(`/api/admin/availability/${id}`, { method: "DELETE" });
 }

@@ -23,10 +23,10 @@ function formatSlotTime(minutesFromStart) {
 }
 
 export default function Takvim() {
-  const { appointments, openNewAppointmentModal } = useOutletContext();
+  const { appointments, appointmentsLoading, appointmentsError, openNewAppointmentModal } = useOutletContext();
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [selectedDay, setSelectedDay] = useState(() => new Date());
-  const [detailAppointment, setDetailAppointment] = useState(null);
+  const [detailAppointmentId, setDetailAppointmentId] = useState(null);
 
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
 
@@ -73,6 +73,13 @@ export default function Takvim() {
           </button>
         </div>
       </div>
+
+      {appointmentsError && <p className="mt-4 text-sm text-red-600">{appointmentsError}</p>}
+      {appointmentsLoading && (
+        <p className="mt-4 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
+          Randevular yükleniyor...
+        </p>
+      )}
 
       {/* Desktop weekly grid */}
       <div className="hidden md:block mt-6 border border-[var(--color-border)] rounded-xl overflow-hidden">
@@ -136,7 +143,7 @@ export default function Takvim() {
                   <button
                     key={a.id}
                     type="button"
-                    onClick={() => setDetailAppointment(a)}
+                    onClick={() => setDetailAppointmentId(a.id)}
                     className={`absolute inset-x-1 rounded-md px-2 py-1 text-left text-xs shadow-sm overflow-hidden ${STATUS_STYLES[a.status]}`}
                     style={{ top, height }}
                   >
@@ -183,7 +190,7 @@ export default function Takvim() {
             <li key={a.id}>
               <button
                 type="button"
-                onClick={() => setDetailAppointment(a)}
+                onClick={() => setDetailAppointmentId(a.id)}
                 className="w-full text-left rounded-xl border border-[var(--color-border)] p-3"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -191,7 +198,7 @@ export default function Takvim() {
                     {a.time} · {a.patient}
                   </span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_STYLES[a.status]}`}>
-                    {a.status}
+                    {a.statusLabel}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">{a.service}</p>
@@ -201,7 +208,7 @@ export default function Takvim() {
         </ul>
       </div>
 
-      <AppointmentDetailModal appointment={detailAppointment} onClose={() => setDetailAppointment(null)} />
+      <AppointmentDetailModal appointmentId={detailAppointmentId} onClose={() => setDetailAppointmentId(null)} />
     </div>
   );
 }

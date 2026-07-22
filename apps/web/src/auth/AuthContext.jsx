@@ -27,14 +27,14 @@ export function AuthProvider({ children }) {
     refresh();
   }, [refresh]);
 
-  async function login(email, password) {
+  async function login(identifier, password) {
     let res;
     try {
       res = await fetch("/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
     } catch {
       return { ok: false, error: "Sunucuya bağlanılamadı. Lütfen tekrar deneyin." };

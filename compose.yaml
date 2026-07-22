@@ -2,6 +2,8 @@ services:
   web:
     build:
       context: ./apps/web
+    env_file:
+      - .env
     ports:
       - "${WEB_PORT:-8080}:80"
     volumes:
@@ -20,6 +22,8 @@ services:
   api:
     build:
       context: ./apps/api
+    env_file:
+      - .env
     volumes:
       - ./apps/api:/app
       - /app/node_modules
@@ -27,6 +31,11 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       API_PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgres://clinic:clinic@db:5432/clinic}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_ROLE: ${ADMIN_ROLE:-}
     depends_on:
       db:
         condition: service_healthy
@@ -38,12 +47,16 @@ services:
 
   db:
     image: postgres:16-alpine
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-clinic}
       POSTGRES_USER: ${POSTGRES_USER:-clinic}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clinic}
     volumes:
       - clinic_db_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clinic} -d ${POSTGRES_DB:-clinic}"]
       interval: 5s

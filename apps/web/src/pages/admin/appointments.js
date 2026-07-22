@@ -1,15 +1,35 @@
-import { services } from "../../content/services";
+export const STATUS_LABELS = {
+  pending: "Bekliyor",
+  confirmed: "Onaylandı",
+  completed: "Tamamlandı",
+  cancelled: "İptal",
+  rejected: "Reddedildi",
+  no_show: "Gelmedi",
+};
 
-export const STATUSES = ["Bekliyor", "Onaylandı", "Tamamlandı", "İptal", "Gelmedi"];
+export const SOURCE_LABELS = {
+  website: "Web Sitesi",
+  phone: "Telefon",
+  whatsapp: "WhatsApp",
+  email: "E-posta",
+  instagram: "Instagram",
+  referral: "Tanıdık / Referans",
+  other: "Diğer",
+};
 
-export const SOURCES = ["Telefon", "WhatsApp", "E-posta", "Instagram", "Tanıdık / Referans", "Diğer"];
+export const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }));
+
+export const SOURCE_OPTIONS = Object.entries(SOURCE_LABELS)
+  .filter(([value]) => value !== "website")
+  .map(([value, label]) => ({ value, label }));
 
 export const STATUS_STYLES = {
-  Bekliyor: "bg-amber-100 text-amber-800",
-  Onaylandı: "bg-[var(--color-secondary)] text-[var(--color-primary)]",
-  Tamamlandı: "bg-green-100 text-green-800",
-  İptal: "bg-red-100 text-red-700",
-  Gelmedi: "bg-gray-200 text-gray-700",
+  pending: "bg-amber-100 text-amber-800",
+  confirmed: "bg-[var(--color-secondary)] text-[var(--color-primary)]",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-red-100 text-red-700",
+  rejected: "bg-red-100 text-red-700",
+  no_show: "bg-gray-200 text-gray-700",
 };
 
 export function toDateKey(date) {
@@ -35,103 +55,76 @@ export function startMinutes(time) {
   return h * 60 + m;
 }
 
-let nextId = 1;
-export function createAppointmentId() {
-  return `appt-${nextId++}`;
+async function request(path, options = {}) {
+  const res = await fetch(path, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    body = null;
+  }
+
+  if (!res.ok) {
+    const error = new Error(body?.error?.message || "İstek başarısız oldu.");
+    error.code = body?.error?.code;
+    error.status = res.status;
+    throw error;
+  }
+
+  return body;
 }
 
-function serviceTitle(slug) {
-  return services.find((s) => s.slug === slug)?.title ?? slug;
+export function fetchAppointments(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") query.set(key, value);
+  });
+  const qs = query.toString();
+  return request(`/api/admin/appointments${qs ? `?${qs}` : ""}`);
 }
 
-/** Mock appointments generated relative to today so they always land in the default week view. */
-export function createSeedAppointments() {
-  const weekStart = getWeekStart(new Date());
+export function fetchAppointmentById(id) {
+  return request(`/api/admin/appointments/${id}`);
+}
 
-  return [
-    {
-      id: createAppointmentId(),
-      patient: "Elif Demir",
-      phone: "0532 111 22 33",
-      email: "",
-      service: serviceTitle("rhinoplasty"),
-      date: addDays(weekStart, 0),
-      time: "09:00",
-      duration: 60,
-      status: "Onaylandı",
-      source: "Telefon",
-      patientNote: "",
-      internalNote: "İlk muayene.",
-    },
-    {
-      id: createAppointmentId(),
-      patient: "Mehmet Kaya",
-      phone: "0533 222 33 44",
-      email: "mehmet.kaya@example.com",
-      service: serviceTitle("liposuction"),
-      date: addDays(weekStart, 1),
-      time: "11:30",
-      duration: 45,
-      status: "Bekliyor",
-      source: "WhatsApp",
-      patientNote: "Hafta sonu uygun.",
-      internalNote: "",
-    },
-    {
-      id: createAppointmentId(),
-      patient: "Ayşe Yılmaz",
-      phone: "0534 333 44 55",
-      email: "",
-      service: serviceTitle("breast-augmentation"),
-      date: addDays(weekStart, 1),
-      time: "14:30",
-      duration: 60,
-      status: "Onaylandı",
-      source: "Instagram",
-      patientNote: "",
-      internalNote: "",
-    },
-    {
-      id: createAppointmentId(),
-      patient: "Deniz Aydın",
-      phone: "0537 666 77 88",
-      email: "",
-      service: serviceTitle("tummy-tuck"),
-      date: addDays(weekStart, 2),
-      time: "13:00",
-      duration: 60,
-      status: "Gelmedi",
-      source: "Diğer",
-      patientNote: "",
-      internalNote: "",
-    },
-    {
-      id: createAppointmentId(),
-      patient: "Zeynep Arslan",
-      phone: "0535 444 55 66",
-      email: "",
-      service: serviceTitle("facelift"),
-      date: addDays(weekStart, 3),
-      time: "16:00",
-      duration: 90,
-      status: "Tamamlandı",
-      source: "Tanıdık / Referans",
-      patientNote: "",
-      internalNote: "Kontrol randevusu planlanacak.",
-    },
-    {
-      id: createAppointmentId(),
-      patient: "Can Öztürk",
-      phone: "0536 555 66 77",
-      email: "",
-      service: serviceTitle("blepharoplasty"),
-      date: addDays(weekStart, 4),
-      time: "10:00",
-      duration: 45,
-      status: "İptal",
-      source: "E-posta",
-      patientNote: "",
-      internalNote: "Hasta iptal etti.",
-    },
-  ];
+export function createAppointment(payload) {
+  return request("/api/admin/appointments", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function updateAppointment(id, payload) {
+  return request(`/api/admin/appointments/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+function formatTime(date) {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+export function mapAppointmentFromApi(item) {
+  const start = new Date(item.startsAt);
+  const end = new Date(item.endsAt);
+  const duration = Math.round((end - start) / 60000);
+
+  return {
+    id: item.id,
+    patient: item.patientName,
+    phone: item.phone,
+    email: item.email || "",
+    service: item.service.name,
+    serviceSlug: item.service.slug,
+    date: start,
+    time: formatTime(start),
+    duration,
+    status: item.status,
+    statusLabel: STATUS_LABELS[item.status] ?? item.status,
+    source: item.source,
+    sourceLabel: SOURCE_LABELS[item.source] ?? item.source,
+    patientNote: item.patientNote || "",
+    internalNote: item.internalNote || "",
+    startsAt: item.startsAt,
+  };
 }

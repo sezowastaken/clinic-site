@@ -24,16 +24,16 @@ function cookieOptions({ clear = false } = {}) {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body ?? {};
-    if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
+    const { identifier, password } = req.body ?? {};
+    if (typeof identifier !== "string" || typeof password !== "string" || !identifier || !password) {
       return res
         .status(400)
-        .json({ error: { code: "VALIDATION_ERROR", message: "Email and password are required." } });
+        .json({ error: { code: "VALIDATION_ERROR", message: "Identifier and password are required." } });
     }
 
     const { rows } = await pool.query(
-      "SELECT id, password_hash, is_active FROM admin_users WHERE email = $1",
-      [email]
+      "SELECT id, password_hash, is_active FROM admin_users WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($1)",
+      [identifier]
     );
     const user = rows[0];
 

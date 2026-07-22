@@ -8,7 +8,9 @@
     "dev": "node --watch src/server.js",
     "migrate": "node scripts/migrate.js",
     "seed:services": "node scripts/seed-services.js",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "bootstrap:admin": "node scripts/bootstrap-admin.js",
+    "docker-start": "npm run migrate && npm run seed:services && npm run bootstrap:admin && npm run dev"
   },
   "dependencies": {
     "express": "^4.21.2",

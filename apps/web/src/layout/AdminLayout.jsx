@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { doctor } from "../content/doctor";
-import { createAppointmentId, createSeedAppointments } from "../pages/admin/appointments";
+import { fetchAppointments, createAppointment, mapAppointmentFromApi } from "../pages/admin/appointments";
 import AppointmentFormModal from "../pages/admin/AppointmentFormModal";
-import { createSeedRequests } from "../pages/admin/requests";
 import { useAuth } from "../auth/AuthContext.jsx";
 
 const NAV_ITEMS = [
@@ -67,15 +66,44 @@ export default function AdminLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [appointments, setAppointments] = useState(() => createSeedAppointments());
+  const [appointments, setAppointments] = useState([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState("");
   const [modalState, setModalState] = useState({ open: false, initialDate: null, initialTime: null });
-  const [requests, setRequests] = useState(() => createSeedRequests());
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const today = new Date().toLocaleDateString("tr-TR", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+
+  const loadAppointments = useCallback(async () => {
+    setAppointmentsLoading(true);
+    setAppointmentsError("");
+    try {
+      const data = await fetchAppointments();
+      setAppointments(data.items.map(mapAppointmentFromApi));
+    } catch (err) {
+      setAppointmentsError(err.message || "Randevular yüklenemedi.");
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  }, []);
+
+  const refreshPendingCount = useCallback(async () => {
+    try {
+      const data = await fetchAppointments({ source: "website", status: "pending" });
+      setPendingRequestsCount(data.total);
+    } catch {
+      /* sidebar badge is non-critical; ignore transient errors */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAppointments();
+    refreshPendingCount();
+  }, [loadAppointments, refreshPendingCount]);
 
   function openNewAppointmentModal(prefill = {}) {
     setModalState({ open: true, initialDate: prefill.date ?? null, initialTime: prefill.time ?? null });
@@ -85,24 +113,19 @@ export default function AdminLayout() {
     setModalState({ open: false, initialDate: null, initialTime: null });
   }
 
-  function addAppointment(data) {
-    setAppointments((prev) => [...prev, { id: createAppointmentId(), ...data }]);
-    closeNewAppointmentModal();
+  async function addAppointment(payload) {
+    try {
+      await createAppointment(payload);
+      await loadAppointments();
+      closeNewAppointmentModal();
+      return { ok: true };
+    } catch (err) {
+      if (err.code === "APPOINTMENT_CONFLICT") {
+        return { ok: false, error: "Bu saat aralığında çakışan bir randevu var." };
+      }
+      return { ok: false, error: err.message || "Randevu kaydedilemedi." };
+    }
   }
-
-  function approveRequest(id) {
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Onaylandı" } : r)));
-  }
-
-  function rejectRequest(id) {
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Reddedildi" } : r)));
-  }
-
-  function updateAndApproveRequest(id, updates) {
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates, status: "Onaylandı" } : r)));
-  }
-
-  const pendingRequestsCount = requests.filter((r) => r.status === "Bekliyor").length;
 
   async function handleLogout() {
     await logout();
@@ -172,11 +195,10 @@ export default function AdminLayout() {
           <Outlet
             context={{
               appointments,
+              appointmentsLoading,
+              appointmentsError,
               openNewAppointmentModal,
-              requests,
-              approveRequest,
-              rejectRequest,
-              updateAndApproveRequest,
+              refreshPendingCount,
             }}
           />
         </main>

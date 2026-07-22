@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext.jsx";
 import { doctor } from "../../content/doctor";
 
@@ -22,7 +22,7 @@ export default function Login() {
   async function onSubmit(data) {
     setError("");
     setSubmitting(true);
-    const result = await login(data.email, data.password);
+    const result = await login(data.identifier, data.password);
     setSubmitting(false);
 
     if (!result.ok) {
@@ -43,17 +43,17 @@ export default function Login() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="email">
-              E-posta
+            <label className="block text-sm font-medium mb-1" htmlFor="identifier">
+              E-posta veya Kullanıcı Adı
             </label>
             <input
-              id="email"
-              type="email"
+              id="identifier"
+              type="text"
               autoComplete="username"
-              {...register("email", { required: true })}
+              {...register("identifier", { required: true })}
               className="w-full h-10 border border-[var(--color-border)] rounded-lg px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
             />
-            {errors.email && <p className="mt-1 text-xs text-red-600">E-posta gereklidir.</p>}
+            {errors.identifier && <p className="mt-1 text-xs text-red-600">E-posta veya kullanıcı adı gereklidir.</p>}
           </div>
 
           <div>
@@ -80,6 +80,13 @@ export default function Login() {
             {submitting ? "Giriş yapılıyor..." : "Giriş Yap"}
           </button>
         </form>
+
+        <Link
+          to="/"
+          className="mt-4 block text-center text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)] hover:text-[var(--color-primary)]"
+        >
+          Ana Sayfaya Dön
+        </Link>
       </div>
     </div>
   );
