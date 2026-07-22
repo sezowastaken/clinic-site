@@ -1,18 +1,16 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { services } from "../content/services";
+import { fetchAvailability, submitAppointmentRequest } from "../api/public-booking";
 
 const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTHS = [
   "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
-const TIME_SLOTS = [
-  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
-];
 const STEP_LABELS = ["Hizmet", "Tarih & Saat", "Bilgileriniz", "Onay"];
+const SLOT_UNAVAILABLE_MESSAGE = "Seçtiğiniz saat artık müsait değil. Lütfen başka bir saat seçin.";
 
 function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -28,16 +26,13 @@ function buildMonthGrid(year, month) {
   return cells;
 }
 
-/** Deterministic mock availability, keyed by date so the same day always shows the same slots. */
-function hashString(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
-  return hash;
-}
-
-function getAvailableSlots(dateKey) {
-  const base = hashString(dateKey);
-  return TIME_SLOTS.filter((_, idx) => (base + idx * 7) % 5 !== 0);
+function monthRange(viewDate) {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  return {
+    dateFrom: toDateKey(new Date(year, month, 1)),
+    dateTo: toDateKey(new Date(year, month + 1, 0)),
+  };
 }
 
 export default function Appointment() {
@@ -49,9 +44,16 @@ export default function Appointment() {
     return d;
   });
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [patient, setPatient] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+
+  const [availabilityDays, setAvailabilityDays] = useState([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
+  const [slotNotice, setSlotNotice] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const {
     register,
@@ -70,10 +72,51 @@ export default function Appointment() {
     [viewDate]
   );
 
-  const availableSlots = useMemo(
-    () => (selectedDate ? getAvailableSlots(toDateKey(selectedDate)) : []),
-    [selectedDate]
+  const availabilityByDate = useMemo(() => {
+    const map = new Map();
+    for (const day of availabilityDays) map.set(day.date, day.slots);
+    return map;
+  }, [availabilityDays]);
+
+  const selectedDaySlots = useMemo(
+    () => (selectedDate ? availabilityByDate.get(toDateKey(selectedDate)) || [] : []),
+    [selectedDate, availabilityByDate]
   );
+
+  const loadAvailability = useCallback(() => {
+    if (!selectedService) {
+      setAvailabilityDays([]);
+      setAvailabilityError("");
+      setAvailabilityLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+
+    const { dateFrom, dateTo } = monthRange(viewDate);
+    fetchAvailability({ serviceSlug: selectedService.slug, dateFrom, dateTo })
+      .then((data) => {
+        if (!cancelled) setAvailabilityDays(data.days || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setAvailabilityError(err.message || "Müsaitlik bilgisi yüklenemedi.");
+      })
+      .finally(() => {
+        if (!cancelled) setAvailabilityLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedService, viewDate]);
+
+  useEffect(() => {
+    setSelectedDate(null);
+    setSelectedSlot(null);
+    return loadAvailability();
+  }, [loadAvailability]);
 
   function goToMonth(offset) {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + offset, 1));
@@ -81,7 +124,8 @@ export default function Appointment() {
 
   function pickDate(date) {
     setSelectedDate(date);
-    setSelectedTime(null);
+    setSelectedSlot(null);
+    setSlotNotice("");
   }
 
   function onPatientSubmit(data) {
@@ -89,9 +133,34 @@ export default function Appointment() {
     setStep(3);
   }
 
-  function confirmAndSubmit() {
-    console.log({ service: selectedService, date: selectedDate, time: selectedTime, patient });
-    setSubmitted(true);
+  async function confirmAndSubmit() {
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await submitAppointmentRequest({
+        patientName: patient.name,
+        phone: patient.phone,
+        email: patient.email || undefined,
+        serviceSlug: selectedService.slug,
+        startsAt: selectedSlot.startsAt,
+        patientNote: patient.note || undefined,
+        kvkkConsent: true,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      if (err.code === "SLOT_UNAVAILABLE") {
+        setSelectedSlot(null);
+        setSlotNotice(SLOT_UNAVAILABLE_MESSAGE);
+        setStep(1);
+        loadAvailability();
+      } else {
+        setSubmitError(err.message || "Randevu talebi gönderilemedi. Lütfen tekrar deneyin.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -105,7 +174,7 @@ export default function Appointment() {
         <h1 className="text-2xl sm:text-3xl font-bold">Randevu talebiniz alındı</h1>
         <p className="mt-3 text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
           {selectedService?.title} için {selectedDate?.toLocaleDateString("tr-TR")} tarihinde saat{" "}
-          {selectedTime} talebiniz alınmıştır. Bu bir kesin randevu değildir; klinik onayını bekleyen
+          {selectedSlot?.label} talebiniz alınmıştır. Bu bir kesin randevu değildir; klinik onayını bekleyen
           bir taleptir. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
         </p>
       </div>
@@ -207,6 +276,17 @@ export default function Appointment() {
               </button>
             </div>
 
+            {slotNotice && (
+              <p className="mt-4 text-sm text-red-600">{slotNotice}</p>
+            )}
+
+            {availabilityLoading && (
+              <p className="mt-4 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
+                Müsaitlik yükleniyor...
+              </p>
+            )}
+            {availabilityError && <p className="mt-4 text-sm text-red-600">{availabilityError}</p>}
+
             <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
               {WEEKDAYS.map((w) => (
                 <div key={w} className="py-1">{w}</div>
@@ -214,16 +294,18 @@ export default function Appointment() {
               {grid.map((date, idx) => {
                 if (!date) return <div key={idx} />;
                 const isPast = date < today;
+                const hasAvailability = (availabilityByDate.get(toDateKey(date)) || []).length > 0;
+                const isDisabled = isPast || availabilityLoading || !!availabilityError || !hasAvailability;
                 const isSelected = selectedDate && toDateKey(date) === toDateKey(selectedDate);
                 return (
                   <button
                     key={idx}
                     type="button"
-                    disabled={isPast}
+                    disabled={isDisabled}
                     onClick={() => pickDate(date)}
                     className={[
                       "aspect-square rounded-lg text-sm transition",
-                      isPast
+                      isDisabled
                         ? "text-[color-mix(in srgb, var(--color-text) 30%, transparent)] cursor-not-allowed"
                         : isSelected
                         ? "bg-[var(--color-primary)] text-white font-semibold"
@@ -242,25 +324,28 @@ export default function Appointment() {
                   {selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" })}{" "}
                   için müsait saatler
                 </h3>
-                {availableSlots.length === 0 ? (
+                {selectedDaySlots.length === 0 ? (
                   <p className="text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
                     Bu tarihte müsait saat bulunmuyor, lütfen başka bir gün seçin.
                   </p>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {availableSlots.map((t) => (
+                    {selectedDaySlots.map((slot) => (
                       <button
-                        key={t}
+                        key={slot.startsAt}
                         type="button"
-                        onClick={() => setSelectedTime(t)}
+                        onClick={() => {
+                          setSelectedSlot(slot);
+                          setSlotNotice("");
+                        }}
                         className={[
                           "h-10 rounded-lg border text-sm transition",
-                          selectedTime === t
+                          selectedSlot?.startsAt === slot.startsAt
                             ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white font-semibold"
                             : "border-[var(--color-border)] hover:bg-[var(--color-secondary)]",
                         ].join(" ")}
                       >
-                        {t}
+                        {slot.label}
                       </button>
                     ))}
                   </div>
@@ -278,7 +363,7 @@ export default function Appointment() {
               </button>
               <button
                 type="button"
-                disabled={!selectedDate || !selectedTime}
+                disabled={!selectedDate || !selectedSlot || availabilityLoading || !!availabilityError}
                 onClick={() => setStep(2)}
                 className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
               >
@@ -374,7 +459,7 @@ export default function Appointment() {
               </div>
               <div className="flex justify-between py-2">
                 <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Saat</dt>
-                <dd className="font-medium">{selectedTime}</dd>
+                <dd className="font-medium">{selectedSlot?.label}</dd>
               </div>
               <div className="flex justify-between py-2">
                 <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Ad Soyad</dt>
@@ -402,20 +487,24 @@ export default function Appointment() {
               Bu talep, klinik tarafından onaylanana kadar kesin randevu anlamına gelmez.
             </p>
 
+            {submitError && <p className="mt-4 text-sm text-red-600">{submitError}</p>}
+
             <div className="mt-6 flex justify-between">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="h-11 px-6 rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
+                disabled={submitting}
+                className="h-11 px-6 rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Geri
               </button>
               <button
                 type="button"
                 onClick={confirmAndSubmit}
-                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
+                disabled={submitting}
+                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
               >
-                Onayla ve Gönder
+                {submitting ? "Gönderiliyor..." : "Onayla ve Gönder"}
               </button>
             </div>
           </div>

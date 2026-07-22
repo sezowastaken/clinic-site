@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.js";
 import adminAppointmentsRouter from "./routes/admin-appointments.js";
 import adminAvailabilityRouter from "./routes/admin-availability.js";
 import adminDashboardRouter from "./routes/admin-dashboard.js";
+import publicBookingRouter from "./routes/public-booking.js";
 
 export function createApp() {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp() {
   app.use("/api/admin/appointments", adminAppointmentsRouter);
   app.use("/api/admin/availability", adminAvailabilityRouter);
   app.use("/api/admin/dashboard", adminDashboardRouter);
+  app.use("/api/public", publicBookingRouter);
 
   app.use((err, req, res, next) => {
     console.error(err);
