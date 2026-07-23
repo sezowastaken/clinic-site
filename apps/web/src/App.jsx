@@ -7,10 +7,10 @@ import AdminLayout from "./layout/AdminLayout.jsx";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
-import Results from "./pages/Results";
 import Videos from "./pages/Videos";
 import Contact from "./pages/Contact";
 import Appointment from "./pages/Appointment";
+import AppointmentLookup from "./pages/AppointmentLookup";
 import KVKK from "./pages/KVKK";
 import AdminLogin from "./pages/admin/Login";
 import AdminOverview from "./pages/admin/Overview";
@@ -27,10 +27,10 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="/hakkinda" element={<About />} />
           <Route path="/hizmetler" element={<Services />} />
-          <Route path="/sonuclar" element={<Results />} />
           <Route path="/videolar" element={<Videos />} />
           <Route path="/iletisim" element={<Contact />} />
           <Route path="/randevu" element={<Appointment />} />
+          <Route path="/randevu-sorgula" element={<AppointmentLookup />} />
           <Route path="/kvkk" element={<KVKK />} />
         </Route>
 

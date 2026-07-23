@@ -1,0 +1,189 @@
++sonuçlar sayfası kaldırılacak
++randevu sorgulama sayfası eklenecek (db'den isim ile randevu sorgulama ve getirme)
++site istekleri kısmına düşen randevular asistan tarafından onaylandığında hasta telefon numarasına sms ile bilgilendirme gönderilecek
++müsaitlik tablosu ayarlama kısmı daha userfriendly olacak (küçük kırmızı-sarı-yeşil noktalar anlaşılmıyor. ayrıca sağ taraftaki müsaitlik ayarla kısmını anlaması uğraşması ve giriş yapması zor. daha kolay görsel bir şekilde girilebilir.)
++müsaitlik tablosu kısmına çoklu seçim eklenecek, çoklu seçimde uygulanan değişiklikler tüm günlere uygulanacak (tüm gün müsait yap, tüm gün müsait değil yap, seçilen zaman aralıklarını müsait yap)
++özet kısmındaki sıradaki randevu kısmında beliren hastaların randevu saati ve ismi card şeklinde olacak, ve tıklayınca detayları gösteren pop-up sayfa açılacak.
++hakkında kısmındaki logolar 20 pixel büyüyecek
++tüm siteye hem user tarafı hem admin tarafına görsel/tasarımsal rework gelecek site çirkin ve özensiz duruyor. kaliteli ve profesyonel güncel toollar ve kütüphaneler kullanılarak yaratıcı ve konsepte uygun bir tasarım uygulanacak.
++kod base'i audit yapılıp redundant kodlar temizlenecek ve gerekirse düzenlemeler, kod birleştirmeler vs. yapılacak
+
+
+Aşama 1 — Güvenli randevu sorgulama altyapısı
+
+Öncelikle randevu modeline güvenli bir public referans eklenmeli:
+
+Tahmin edilmesi zor benzersiz public_reference
+Telefon numarası normalizasyonu
+Referansın public başvuru sonrasında kullanıcıya gösterilmesi
+POST /api/public/appointment-lookup
+Randevu kodu + telefon ile sorgulama
+Rate limit
+Minimal response
+/randevu-sorgula public sayfası
+
+İsim sadece sonucun içinde maskeli biçimde kullanılabilir:
+
+Zehra H.
+
+ama sorgu anahtarı olmamalı.
+
+Aşama 2 — SMS bildirim sistemi
+
+Randevu pending → confirmed olduğunda SMS gönderilmeli.
+
+Burada yalnızca API çağırmak yeterli değil. Şunlar olmalı:
+
+Tek bir SMS sağlayıcı adapter’ı
+Sağlayıcı bilgileri .env içinde
+Telefon numarası normalizasyonu
+SMS gönderim kayıt tablosu
+Gönderildi / başarısız / tekrar denendi durumu
+Aynı randevu için tekrar tekrar onay SMS’i gönderilmemesi
+SMS başarısız olsa bile randevunun onaylanmış kalması
+Admin tarafında “SMS gönderilemedi, tekrar dene” seçeneği
+
+SMS metni mümkün olduğunca genel olmalı:
+
+Randevunuz onaylandı.
+Tarih: ...
+Saat: ...
+Randevu kodu: ...
+
+Prosedür adı gibi gereksiz hassas bilgiler SMS’e yazılmamalı. Bildirim SMS’i pazarlama mesajıyla veya reklam izniyle birleştirilmemeli. KVKK’nın 2025 tarihli kararında hizmet işlemleriyle ticari ileti rızalarının tek bir işlem içinde birleştirilmemesi gerektiği özellikle vurgulanıyor.
+
+Aşama 3 — Müsaitlik backend’ine toplu işlem desteği
+
+Arayüzden önce backend hazırlanmalı. Mevcut tek tek POST ve DELETE istekleri çoklu gün seçiminde onlarca request oluşturur.
+
+Tek transaction içinde çalışan bir bulk endpoint eklenmeli:
+
+PUT /api/admin/availability/bulk
+
+Desteklemesi gereken işlemler:
+
+Seçili günleri tamamen kapat
+Seçili günleri tam gün müsait yap
+Seçili günlere özel saat aralıkları uygula
+Günlerin mevcut aralıklarını değiştir veya tamamen yenile
+
+“Tam gün”ün ne olduğu net tanımlanmalı. Örneğin .env veya klinik ayarında:
+
+CLINIC_DAY_START=09:00
+CLINIC_DAY_END=18:00
+
+Toplu işlem transaction içinde olmalı; günlerin yarısının güncellenip yarısının başarısız kalmaması gerekir.
+
+Aşama 4 — Müsaitlik ekranının yeniden tasarlanması
+
+Takvimde küçük noktalar yerine günün durumu doğrudan okunmalı:
+
+Müsait değil
+09:00–13:00
+09:00–12:00, 14:00–17:00
+Tam gün
+
+Yeni etkileşim:
+
+Günlere tıklayarak çoklu seçim
+Seçili günlerin belirgin çerçeve/background ile gösterilmesi
+Altta veya üstte toplu işlem çubuğu
+Hızlı aksiyonlar:
+Tam gün müsait
+Müsait değil
+Özel saat belirle
+Tek gün seçildiğinde basit modal/drawer
+Mobilde sağ kolon yerine tam ekran drawer
+
+Mevcut “sebep” alanı gerçekten kullanılmayacaksa kaldırılmalı. Kullanılacaksa ayrı bir gün durumu tablosuyla kalıcı hâle getirilmeli; şu anki gibi görünüşte var fakat kaydedilmeyen bir alan bırakılmamalı.
+
+Aşama 5 — Ortak tasarım sistemi
+
+Public ve admin sayfaları tek promptta baştan yapılmamalı. Önce temel tasarım sistemi oluşturulmalı:
+
+Renk ve tipografi token’ları
+Button
+Input / Select / Textarea
+Card
+Dialog / Drawer
+Tooltip
+StatusBadge
+PageHeader
+EmptyState
+ErrorState
+Skeleton
+Toast
+
+Yeni kütüphane kullanımı sınırlı tutulmalı:
+
+Radix Primitives: erişilebilir dialog, popover ve tooltip gibi etkileşimler
+TanStack Query: mevcut tekrarlanan useEffect + loading + error + refresh kodlarını merkezi API state yapısına taşımak
+Lucide React: tutarlı ikonlar
+Motion: yalnızca public tarafta ölçülü mikro animasyonlar
+
+Radix erişilebilir, özelleştirilebilir düşük seviyeli bileşenlere odaklanıyor; TanStack Query ise React tarafında sunucu verisini çekme, cache ve invalidation yapısını merkezileştiriyor. Motion üretim amaçlı React animasyonları sunuyor.
+
+Tam bir ağır UI framework’ü eklemek gerekli değil. Mevcut Tailwind tabanı korunabilir.
+
+Aşama 6 — Public site tasarım yenilemesi
+
+Bu aşamada:
+
+Sonuçlar route’u, nav öğesi ve dosyası kaldırılır
+Mobil navigasyon eklenir
+Ana sayfa yeniden tasarlanır
+Hakkında sayfası düzenlenir
+Logolar büyütülür ve hizalanır
+Hizmetler, videolar, iletişim yeniden tasarlanır
+Randevu ve randevu sorgulama sayfaları aynı sistemle görselleştirilir
+Footer ve yasal bağlantılar tamamlanır
+Loading/error/success ekranları profesyonelleştirilir
+Responsive ve erişilebilirlik kontrolleri yapılır
+
+Tasarım yönü “lüks otel sitesi” veya aşırı animasyonlu ajans sitesi değil; sakin, güvenilir, medikal ve premium olmalı.
+
+Hakkında sayfasındaki kurum, board ve üyelik ifadeleri yayına alınmadan doktor tarafından doğrulanmalı. Şu anda sayfada “American Board of Plastic Surgery” ve çeşitli üyelik ifadeleri doğrudan içerik olarak yer alıyor.
+
+Aşama 7 — Admin panel tasarım yenilemesi
+
+Admin panelinde estetikten önce hız ve anlaşılabilirlik hedeflenmeli:
+
+Daha net sidebar ve topbar
+Tıklanabilir sıradaki randevu kartı
+Kartta hasta adı, tarih ve saat
+Tıklanınca mevcut AppointmentDetailModal benzeri detay modalı
+Bugünün randevularının tamamının tıklanabilir olması
+Site isteklerinde daha net aksiyon sırası
+Takvimde statülerin kolay okunması
+Toast bildirimleri
+SMS durumu ve tekrar gönderme
+Yeni müsaitlik UX’i
+Mobil admin kullanımının iyileştirilmesi
+
+Overview’daki bu değişikliği ayrı bir büyük görev hâline getirmek yerine admin tasarım aşamasına dahil etmek daha verimli.
+
+Aşama 8 — Final audit, güvenlik ve test
+
+En son:
+
+Kullanılmayan Results.jsx
+Muhtemel kullanılmayan shared/Navbar.jsx
+Tekrarlanan fetch/request fonksiyonları
+Tekrarlanan modal, badge, tarih formatlama kodları
+Kullanılmayan importlar ve yardımcılar
+Büyük component’lerin bölünmesi
+API error formatlarının standardizasyonu
+Hassas veri loglarının kontrolü
+Public endpoint rate limit’leri
+Telefon ve input normalizasyonu
+Erişilebilirlik ve performans kontrolü
+
+Ardından yalnızca kritik akışları kapsayan küçük bir E2E seti:
+
+Public randevu oluşturma
+Güvenli randevu sorgulama
+Admin onaylama ve SMS tetikleme
+Çoklu müsaitlik uygulama
+Dolu saatin tekrar alınamaması
+
+Geniş ve token yakan yüzlerce test yerine bu beş ana akış yeterli olur.

@@ -8,6 +8,10 @@ const SLOT_ALIGN_MS = 30 * 60 * 1000;
 const MAX_RANGE_DAYS = 62;
 const ISTANBUL_OFFSET_MS = 3 * 60 * 60 * 1000; // Europe/Istanbul is a fixed UTC+3 offset (no DST since 2016).
 
+const LOOKUP_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const LOOKUP_RATE_LIMIT_MAX_ATTEMPTS = 10;
+const lookupAttemptsByIp = new Map();
+
 function validationError(res, message) {
   return res.status(400).json({ error: { code: "VALIDATION_ERROR", message } });
 }
@@ -16,6 +20,47 @@ function slotUnavailable(res) {
   return res.status(409).json({
     error: { code: "SLOT_UNAVAILABLE", message: "The selected time slot is no longer available." },
   });
+}
+
+function appointmentNotFound(res) {
+  return res.status(404).json({
+    error: { code: "APPOINTMENT_NOT_FOUND", message: "No matching appointment was found." },
+  });
+}
+
+function normalizePhone(phone) {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (/^90[0-9]{10}$/.test(digits)) return digits;
+  if (/^0[0-9]{10}$/.test(digits)) return `90${digits.slice(1)}`;
+  if (/^5[0-9]{9}$/.test(digits)) return `90${digits}`;
+  return digits;
+}
+
+const MIN_NAME_LENGTH = 3;
+
+// Unify Turkish I-variants (İ/I/ı/i) to a single character before lowercasing, since
+// JS's locale-agnostic toLowerCase() turns 'İ' into "i" + a combining dot (two code points),
+// which would never equal a plain "i" typed without Turkish keyboard support.
+function normalizeTurkishName(name) {
+  return name
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[İIıi]/g, "i")
+    .toLowerCase();
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const timestamps = (lookupAttemptsByIp.get(ip) || []).filter(
+    (t) => now - t < LOOKUP_RATE_LIMIT_WINDOW_MS
+  );
+  if (timestamps.length >= LOOKUP_RATE_LIMIT_MAX_ATTEMPTS) {
+    lookupAttemptsByIp.set(ip, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  lookupAttemptsByIp.set(ip, timestamps);
+  return false;
 }
 
 function pad(n) {
@@ -197,7 +242,7 @@ router.post("/appointment-requests", async (req, res, next) => {
       `INSERT INTO appointments
         (patient_name, phone, email, service_id, starts_at, ends_at, status, source, patient_note, internal_note, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'website', $7, NULL, NULL)
-       RETURNING id, status`,
+       RETURNING public_reference, status`,
       [
         patientName.trim(),
         phone.trim(),
@@ -209,9 +254,55 @@ router.post("/appointment-requests", async (req, res, next) => {
       ]
     );
 
-    res.status(201).json({ id: rows[0].id, status: rows[0].status });
+    res.status(201).json({ reference: rows[0].public_reference, status: rows[0].status });
   } catch (err) {
     if (err.code === "23P01") return slotUnavailable(res);
+    next(err);
+  }
+});
+
+router.post("/appointment-lookup", async (req, res, next) => {
+  try {
+    if (isRateLimited(req.ip)) {
+      return res.status(429).json({
+        error: { code: "TOO_MANY_ATTEMPTS", message: "Too many attempts. Please try again later." },
+      });
+    }
+
+    const { patientName, phone } = req.body ?? {};
+    if (typeof patientName !== "string" || typeof phone !== "string" || !phone.trim()) {
+      return validationError(res, "patientName and phone are required.");
+    }
+
+    const normalizedInput = normalizeTurkishName(patientName);
+    if (normalizedInput.replace(/ /g, "").length < MIN_NAME_LENGTH) {
+      return validationError(res, `patientName must contain at least ${MIN_NAME_LENGTH} non-space characters.`);
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    const { rows } = await pool.query(
+      `SELECT a.patient_name, a.starts_at, a.ends_at, a.status, s.name AS service_name
+       FROM appointments a
+       JOIN services s ON s.id = a.service_id
+       WHERE a.phone_normalized = $1 AND a.source = 'website'
+       ORDER BY a.starts_at DESC`,
+      [normalizedPhone]
+    );
+
+    const matches = rows.filter((row) => normalizeTurkishName(row.patient_name).includes(normalizedInput));
+    if (matches.length === 0) return appointmentNotFound(res);
+
+    res.json({
+      patientName: matches[0].patient_name,
+      appointments: matches.map((row) => ({
+        serviceName: row.service_name,
+        startsAt: row.starts_at,
+        endsAt: row.ends_at,
+        status: row.status,
+      })),
+    });
+  } catch (err) {
     next(err);
   }
 });

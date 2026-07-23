@@ -7,6 +7,7 @@ import {
   approveRequest as approveRequestApi,
   rejectRequest as rejectRequestApi,
   editAndApproveRequest,
+  buildWhatsAppConfirmationUrl,
 } from "./requests";
 import RequestEditModal from "./RequestEditModal";
 
@@ -283,7 +284,27 @@ export default function SiteRequests() {
               Kayıt bulunamadı.
             </p>
           ) : (
-            visibleProcessed.map((r) => <RequestCard key={r.id} request={r} />)
+            visibleProcessed.map((r) => {
+              const whatsappEligible = r.status === "confirmed" && r.source === "website";
+              const whatsappUrl = whatsappEligible ? buildWhatsAppConfirmationUrl(r) : null;
+
+              return (
+                <RequestCard key={r.id} request={r}>
+                  {whatsappEligible && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        disabled={!whatsappUrl}
+                        onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
+                        className="h-8 px-3 rounded-lg text-xs font-medium border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        WhatsApp'tan Bilgilendir
+                      </button>
+                    </div>
+                  )}
+                </RequestCard>
+              );
+            })
           ))}
       </div>
 

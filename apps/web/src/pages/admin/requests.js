@@ -27,6 +27,7 @@ export function mapRequestFromApi(item) {
     internalNote: item.internalNote || "",
     status: item.status,
     statusLabel: STATUS_LABELS[item.status] ?? item.status,
+    source: item.source,
   };
 }
 
@@ -51,4 +52,27 @@ export function rejectRequest(id) {
 
 export function editAndApproveRequest(id, updates) {
   return updateAppointment(id, { ...updates, status: "confirmed" });
+}
+
+export function normalizePhoneForWhatsApp(phone) {
+  const digits = (phone || "").replace(/[^0-9]/g, "");
+  if (digits.startsWith("90") && digits.length === 12) return digits;
+  if (digits.startsWith("0") && digits.length === 11) return `90${digits.slice(1)}`;
+  if (digits.startsWith("5") && digits.length === 10) return `90${digits}`;
+  return null;
+}
+
+function formatDateDDMMYYYY(date) {
+  return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`;
+}
+
+export function buildWhatsAppConfirmationUrl(request) {
+  const normalizedPhone = normalizePhoneForWhatsApp(request.phone);
+  if (!normalizedPhone) return null;
+
+  const message = `Merhaba ${request.patient},\n\nRandevu talebiniz onaylanmıştır.\n\nTarih: ${formatDateDDMMYYYY(
+    request.requestedDate
+  )}\nSaat: ${request.requestedTime}\n\nRandevu durumunuzu web sitemizdeki Randevu Sorgula ekranından kontrol edebilirsiniz.`;
+
+  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
 }

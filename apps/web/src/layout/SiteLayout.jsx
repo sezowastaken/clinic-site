@@ -18,7 +18,6 @@ export default function SiteLayout() {
     { to: "/", label: "Ana Sayfa" },
     { to: "/hakkinda", label: "Hakkında" },
     { to: "/hizmetler", label: "Hizmetler" },
-    { to: "/sonuclar", label: "Sonuçlar" },
     { to: "/videolar", label: "Videolar" },
     { to: "/iletisim", label: "İletişim" },
   ];
@@ -57,7 +56,13 @@ export default function SiteLayout() {
             ))}
           </nav>
 
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/randevu-sorgula"
+              className="inline-flex h-10 items-center justify-center rounded-lg px-2 sm:px-4 text-xs sm:text-sm font-medium hover:bg-[var(--color-secondary)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+            >
+              Randevu Sorgula
+            </Link>
             <Link
               to="/randevu"
               className="inline-flex h-10 items-center justify-center rounded-lg px-4 font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition will-change-transform shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
@@ -80,6 +85,12 @@ export default function SiteLayout() {
             © {new Date().getFullYear()} {doctor.name}. Tüm hakları saklıdır.
           </p>
           <div className="flex gap-5">
+            <Link
+              to="/randevu-sorgula"
+              className="underline underline-offset-2 hover:text-[var(--color-primary)] transition"
+            >
+              Randevu Sorgula
+            </Link>
             <Link
               to="/kvkk"
               className="underline underline-offset-2 hover:text-[var(--color-primary)] transition"

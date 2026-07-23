@@ -32,3 +32,10 @@ export function submitAppointmentRequest(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function lookupAppointment({ patientName, phone }) {
+  return request("/api/public/appointment-lookup", {
+    method: "POST",
+    body: JSON.stringify({ patientName, phone }),
+  });
+}

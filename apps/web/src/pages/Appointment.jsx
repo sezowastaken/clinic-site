@@ -177,6 +177,18 @@ export default function Appointment() {
           {selectedSlot?.label} talebiniz alınmıştır. Bu bir kesin randevu değildir; klinik onayını bekleyen
           bir taleptir. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
         </p>
+
+        <p className="mt-6 text-sm text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
+          Randevu talebinizi adınız ve telefon numaranız ile sorgulayabilirsiniz.
+        </p>
+        <p className="mt-2 text-sm">
+          <Link
+            to="/randevu-sorgula"
+            className="underline underline-offset-2 hover:text-[var(--color-primary)] transition"
+          >
+            Randevu durumunu sorgula
+          </Link>
+        </p>
       </div>
     );
   }

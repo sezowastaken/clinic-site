@@ -1,9 +1,4 @@
-import { toDateKey, startMinutes } from "./appointments";
-
-export const REASONS = ["Ameliyat", "İzin", "Toplantı", "Klinik kapalı"];
-
-const WORK_START_MIN = startMinutes("09:00");
-const WORK_END_MIN = startMinutes("18:00");
+import { toDateKey } from "./appointments";
 
 export function buildMonthGrid(year, month) {
   const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first
@@ -15,45 +10,6 @@ export function buildMonthGrid(year, month) {
   return cells;
 }
 
-function mergeRanges(ranges) {
-  const sorted = [...ranges].sort((a, b) => startMinutes(a.start) - startMinutes(b.start));
-  const merged = [];
-  for (const r of sorted) {
-    const last = merged[merged.length - 1];
-    if (last && startMinutes(r.start) <= startMinutes(last.end)) {
-      if (startMinutes(r.end) > startMinutes(last.end)) last.end = r.end;
-    } else {
-      merged.push({ ...r });
-    }
-  }
-  return merged;
-}
-
-/** A day is unavailable by default unless it has an entry with at least one range. */
-export function getDayStatus(entry) {
-  if (!entry || entry.ranges.length === 0) return "unavailable";
-  const merged = mergeRanges(entry.ranges);
-  const coversFullDay = merged.some(
-    (r) => startMinutes(r.start) <= WORK_START_MIN && startMinutes(r.end) >= WORK_END_MIN
-  );
-  return coversFullDay ? "full" : "partial";
-}
-
-export function validateNewRange(existingRanges, start, end) {
-  if (!start || !end) return "Başlangıç ve bitiş saati gereklidir.";
-  if (startMinutes(end) <= startMinutes(start)) return "Bitiş saati başlangıç saatinden sonra olmalıdır.";
-  const overlaps = existingRanges.some(
-    (r) => startMinutes(start) < startMinutes(r.end) && startMinutes(end) > startMinutes(r.start)
-  );
-  if (overlaps) return "Bu saat aralığı mevcut bir aralıkla çakışıyor.";
-  return null;
-}
-
-export function combineDateAndTime(date, time) {
-  const [hour, minute] = time.split(":").map(Number);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);
-}
-
 function formatTime(date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
@@ -62,12 +18,29 @@ export function mapWindowFromApi(item) {
   const start = new Date(item.startsAt);
   const end = new Date(item.endsAt);
   return {
-    id: item.id,
     dateKey: toDateKey(start),
     start: formatTime(start),
     end: formatTime(end),
-    reason: item.reason || "",
   };
+}
+
+/** A canonical string for a day's ranges, used to compare schedules across dates. */
+export function canonicalRanges(ranges) {
+  return [...ranges]
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .map((r) => `${r.start}-${r.end}`)
+    .join("|");
+}
+
+/** Short label + tone for a calendar day cell. Text always conveys the status (never color alone). */
+export function dayCellLabel(ranges) {
+  if (!ranges || ranges.length === 0) return { text: "Kapalı", tone: "closed" };
+  if (ranges.length === 1) {
+    const r = ranges[0];
+    if (r.start === "09:00" && r.end === "18:00") return { text: "Tam gün", tone: "full" };
+    return { text: `${r.start}–${r.end}`, tone: "partial" };
+  }
+  return { text: `${ranges.length} zaman aralığı`, tone: "partial" };
 }
 
 async function request(path, options = {}) {
@@ -103,14 +76,9 @@ export function fetchAvailability(params = {}) {
   return request(`/api/admin/availability${qs ? `?${qs}` : ""}`);
 }
 
-export function createAvailability(payload) {
-  return request("/api/admin/availability", { method: "POST", body: JSON.stringify(payload) });
-}
-
-export function updateAvailability(id, payload) {
-  return request(`/api/admin/availability/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
-}
-
-export function deleteAvailability(id) {
-  return request(`/api/admin/availability/${id}`, { method: "DELETE" });
+export function bulkUpdateAvailability({ dates, ranges }) {
+  return request("/api/admin/availability/bulk", {
+    method: "PUT",
+    body: JSON.stringify({ dates, ranges }),
+  });
 }

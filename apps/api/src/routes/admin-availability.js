@@ -100,6 +100,110 @@ router.post("/", requireAuth, async (req, res, next) => {
   }
 });
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+// Europe/Istanbul has used a fixed UTC+3 offset with no DST since 2016.
+const ISTANBUL_OFFSET = "+03:00";
+
+function istanbulTodayKey() {
+  const now = new Date(Date.now() + 3 * 60 * 60 * 1000);
+  return now.toISOString().slice(0, 10);
+}
+
+function isRealDate(key) {
+  const d = new Date(`${key}T00:00:00Z`);
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === key;
+}
+
+function timeToMinutes(time) {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+router.put("/bulk", requireAuth, async (req, res, next) => {
+  const { dates, ranges } = req.body ?? {};
+
+  if (!Array.isArray(dates) || dates.length < 1 || dates.length > 62) {
+    return validationError(res, "dates must contain 1 to 62 dates.");
+  }
+  if (new Set(dates).size !== dates.length) {
+    return validationError(res, "dates must not contain duplicates.");
+  }
+
+  const today = istanbulTodayKey();
+  for (const date of dates) {
+    if (typeof date !== "string" || !DATE_RE.test(date) || !isRealDate(date)) {
+      return validationError(res, "Each date must be a valid YYYY-MM-DD value.");
+    }
+    if (date < today) {
+      return validationError(res, "dates must not be in the past.");
+    }
+  }
+
+  if (!Array.isArray(ranges)) {
+    return validationError(res, "ranges must be an array.");
+  }
+  if (ranges.length > 6) {
+    return validationError(res, "A maximum of 6 ranges per day is allowed.");
+  }
+
+  const normalizedRanges = [];
+  for (const range of ranges) {
+    const start = range?.start;
+    const end = range?.end;
+    if (typeof start !== "string" || typeof end !== "string" || !TIME_RE.test(start) || !TIME_RE.test(end)) {
+      return validationError(res, "Each range must use HH:mm start and end times.");
+    }
+    const startMin = timeToMinutes(start);
+    const endMin = timeToMinutes(end);
+    if (startMin % 30 !== 0 || endMin % 30 !== 0) {
+      return validationError(res, "Range times must use 30-minute increments.");
+    }
+    if (startMin >= endMin) {
+      return validationError(res, "Range start must be before end.");
+    }
+    normalizedRanges.push({ start, end, startMin, endMin });
+  }
+
+  const sorted = [...normalizedRanges].sort((a, b) => a.startMin - b.startMin);
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].startMin < sorted[i - 1].endMin) {
+      return validationError(res, "ranges must not overlap each other.");
+    }
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    for (const date of dates) {
+      const dayStart = `${date}T00:00:00${ISTANBUL_OFFSET}`;
+      const dayEnd = `${date}T24:00:00${ISTANBUL_OFFSET}`;
+      await client.query(
+        "DELETE FROM availability_windows WHERE starts_at >= $1 AND starts_at < $2",
+        [dayStart, dayEnd]
+      );
+
+      for (const range of normalizedRanges) {
+        await client.query(
+          `INSERT INTO availability_windows (starts_at, ends_at, reason, created_by)
+           VALUES ($1, $2, NULL, $3)`,
+          [`${date}T${range.start}:00${ISTANBUL_OFFSET}`, `${date}T${range.end}:00${ISTANBUL_OFFSET}`, req.adminUser.id]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    res.json({ updatedDates: dates.length, createdWindows: dates.length * normalizedRanges.length });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    handleDbError(err, res, next);
+  } finally {
+    client.release();
+  }
+});
+
 router.patch("/:id", requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
