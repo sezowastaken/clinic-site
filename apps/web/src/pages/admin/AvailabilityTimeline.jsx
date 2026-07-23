@@ -1,18 +1,22 @@
 import { useRef, useState } from "react";
 
-// Visible window 08:00–20:00 on a 30-minute grid.
+// Horizontal timeline over the visible window 08:00–20:00 on a 30-minute grid.
 const DAY_START = 8 * 60;
 const DAY_END = 20 * 60;
+const SPAN = DAY_END - DAY_START;
 const SNAP = 30;
 const MIN_DUR = 30;
 const MAX_RANGES = 6;
-const SLOT_PX = 28; // height of one 30-minute slot
-const TOTAL_PX = ((DAY_END - DAY_START) / SNAP) * SLOT_PX;
-const HANDLE_PX = 9;
+const EDGE_PX = 8;
+
+const MIN_WIDTH = 640; // scroll the inner track below this width
+const HEIGHT = 120;
+const TRACK_TOP = 22;
+const TRACK_BOTTOM = 8;
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const snap = (m) => Math.round(m / SNAP) * SNAP;
-const minToPx = (m) => ((m - DAY_START) / SNAP) * SLOT_PX;
+const pct = (m) => ((m - DAY_START) / SPAN) * 100;
 const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const parse = (t) => {
   const [h, m] = t.split(":").map(Number);
@@ -31,7 +35,6 @@ function toRanges(items) {
     .map((it) => ({ start: fmt(it.start), end: fmt(it.end) }));
 }
 
-/** Lowest free minute below `point` and highest free minute above it, given sorted blocks. */
 function freeGap(sorted, point) {
   let lo = DAY_START;
   let hi = DAY_END;
@@ -42,28 +45,44 @@ function freeGap(sorted, point) {
   return [lo, hi];
 }
 
+const splitValid = (block, point) => point - block.start >= MIN_DUR && block.end - point >= MIN_DUR;
+
 export default function AvailabilityTimeline({ ranges, onChange, disabled }) {
   const containerRef = useRef(null);
-  const [drag, setDrag] = useState(null);
-  const [selected, setSelected] = useState(null); // index of block showing actions
-  const [splitArmed, setSplitArmed] = useState(null); // index awaiting split click
+  const dragRef = useRef(null); // authoritative live gesture; read at commit time
+  const suppressClickRef = useRef(false); // swallow the click that follows a drag
+  const invalidTimer = useRef(null);
+  const [drag, setDrag] = useState(null); // mirror of dragRef, drives the preview render
+  const [hover, setHover] = useState(null);
+  const [invalid, setInvalid] = useState(false);
+  const [coarse] = useState(
+    () => typeof window !== "undefined" && window.matchMedia?.("(hover: none)").matches
+  );
 
   const items = drag?.preview ?? toItems(ranges);
 
-  function localY(e) {
+  // Convert a pointer event to a (fractional) minute on the axis.
+  function eventMinute(e) {
     const rect = containerRef.current.getBoundingClientRect();
-    return clamp(e.clientY - rect.top, 0, TOTAL_PX);
+    const w = rect.width || 1;
+    const x = clamp(e.clientX - rect.left, 0, w);
+    return DAY_START + (x / w) * SPAN;
   }
 
-  function hitTest(y, list) {
+  // Edge grab zone expressed in minutes, so it stays ~EDGE_PX wide.
+  function edgeToleranceMin() {
+    const w = containerRef.current?.getBoundingClientRect().width || MIN_WIDTH;
+    return (EDGE_PX / w) * SPAN;
+  }
+
+  function hitTest(minute, list) {
+    const tol = edgeToleranceMin();
     for (let i = 0; i < list.length; i++) {
-      const top = minToPx(list[i].start);
-      const bottom = minToPx(list[i].end);
-      if (y >= top && y <= bottom) {
-        let zone = "body";
-        if (y <= top + HANDLE_PX) zone = "top";
-        else if (y >= bottom - HANDLE_PX) zone = "bottom";
-        return { index: i, zone };
+      const { start, end } = list[i];
+      if (minute >= start && minute <= end) {
+        if (minute <= start + tol) return { index: i, zone: "start" };
+        if (minute >= end - tol) return { index: i, zone: "end" };
+        return { index: i, zone: "body" };
       }
     }
     return null;
@@ -73,181 +92,236 @@ export default function AvailabilityTimeline({ ranges, onChange, disabled }) {
     onChange(toRanges(list));
   }
 
-  function handleSplit(y, list) {
-    const block = list[splitArmed];
-    setSplitArmed(null);
-    setSelected(null);
+  function flashInvalid() {
+    setInvalid(true);
+    clearTimeout(invalidTimer.current);
+    invalidTimer.current = setTimeout(() => setInvalid(false), 900);
+  }
+
+  function doSplit(index, minute) {
+    const list = toItems(ranges);
+    const block = list[index];
     if (!block) return;
-    const point = snap(clamp(DAY_START + (y / SLOT_PX) * SNAP, block.start, block.end));
-    if (point - block.start < MIN_DUR || block.end - point < MIN_DUR) return; // both parts need 30 min
-    const next = list.filter((_, i) => i !== splitArmed);
-    next.push({ start: block.start, end: point }, { start: point, end: block.end });
+    const p = clamp(snap(minute), block.start, block.end);
+    if (!splitValid(block, p)) {
+      flashInvalid();
+      return;
+    }
+    const next = list.filter((_, i) => i !== index);
+    next.push({ start: block.start, end: p }, { start: p, end: block.end });
     commit(next);
+  }
+
+  function setGesture(next) {
+    dragRef.current = next;
+    setDrag(next);
   }
 
   function onPointerDown(e) {
     if (disabled) return;
     const list = toItems(ranges);
-    const y = localY(e);
+    const minute = eventMinute(e);
+    const hit = hitTest(minute, list);
+    containerRef.current.setPointerCapture?.(e.pointerId);
+    setHover(null);
 
-    if (splitArmed !== null) {
-      handleSplit(y, list);
-      return;
-    }
-
-    const hit = hitTest(y, list);
-    e.currentTarget.setPointerCapture(e.pointerId);
-
-    if (hit) {
-      setDrag({ mode: hit.zone, index: hit.index, startY: y, orig: list, moved: false, preview: list });
-    } else {
+    if (hit && (hit.zone === "start" || hit.zone === "end")) {
+      setGesture({ mode: "resize", edge: hit.zone, index: hit.index, orig: list, downMin: minute, moved: false, preview: list });
+    } else if (hit && hit.zone === "body") {
+      setGesture({ mode: "split", index: hit.index, orig: list, downMin: minute, moved: false, preview: list });
+    } else if (!hit) {
       if (list.length >= MAX_RANGES) return;
-      const anchor = snap(clamp(DAY_START + (y / SLOT_PX) * SNAP, DAY_START, DAY_END));
-      setDrag({ mode: "create", anchor, startY: y, orig: list, moved: false, preview: list });
+      const anchor = snap(clamp(minute, DAY_START, DAY_END));
+      setGesture({ mode: "create", anchor, orig: list, downMin: minute, moved: false, preview: list });
     }
   }
 
   function onPointerMove(e) {
-    if (!drag) return;
-    const y = localY(e);
-    const moved = drag.moved || Math.abs(y - drag.startY) > 3;
-    const cur = snap(clamp(DAY_START + (y / SLOT_PX) * SNAP, DAY_START, DAY_END));
-    const sorted = drag.orig;
-    let preview = drag.orig;
+    const d = dragRef.current;
+    const minute = eventMinute(e);
 
-    if (drag.mode === "create") {
-      const [lo, hi] = freeGap(sorted, drag.anchor);
-      let start = clamp(Math.min(drag.anchor, cur), lo, hi - MIN_DUR);
-      let end = clamp(Math.max(drag.anchor, cur), lo + MIN_DUR, hi);
+    if (!d) {
+      const hit = hitTest(minute, toItems(ranges));
+      if (hit && (hit.zone === "start" || hit.zone === "end")) setHover({ type: "edge", index: hit.index, edge: hit.zone });
+      else if (hit && hit.zone === "body") setHover({ type: "split", index: hit.index, min: clamp(snap(minute), DAY_START, DAY_END) });
+      else setHover(null);
+      return;
+    }
+
+    // A real change is a new 30-minute slot.
+    const moved = d.moved || snap(minute) !== snap(d.downMin);
+    const sorted = d.orig;
+    const cur = snap(clamp(minute, DAY_START, DAY_END));
+    let preview = d.orig;
+
+    if (d.mode === "create") {
+      const [lo, hi] = freeGap(sorted, d.anchor);
+      let start = clamp(Math.min(d.anchor, cur), lo, hi - MIN_DUR);
+      let end = clamp(Math.max(d.anchor, cur), lo + MIN_DUR, hi);
       if (end - start < MIN_DUR) end = clamp(start + MIN_DUR, lo + MIN_DUR, hi);
       preview = [...sorted, { start, end }];
-    } else {
-      const block = sorted[drag.index];
-      const prev = sorted[drag.index - 1];
-      const next = sorted[drag.index + 1];
-      const lower = prev ? prev.end : DAY_START;
-      const upper = next ? next.start : DAY_END;
-
-      if (drag.mode === "move") {
-        const dur = block.end - block.start;
-        const ns = clamp(snap(block.start + (cur - snap(DAY_START + (drag.startY / SLOT_PX) * SNAP))), lower, upper - dur);
-        preview = sorted.map((b, i) => (i === drag.index ? { start: ns, end: ns + dur } : b));
-      } else if (drag.mode === "top") {
-        const ns = clamp(cur, lower, block.end - MIN_DUR);
-        preview = sorted.map((b, i) => (i === drag.index ? { start: ns, end: block.end } : b));
-      } else if (drag.mode === "bottom") {
-        const ne = clamp(cur, block.start + MIN_DUR, upper);
-        preview = sorted.map((b, i) => (i === drag.index ? { start: block.start, end: ne } : b));
+    } else if (d.mode === "resize") {
+      const block = sorted[d.index];
+      const prev = sorted[d.index - 1];
+      const next = sorted[d.index + 1];
+      if (d.edge === "start") {
+        const ns = clamp(cur, prev ? prev.end : DAY_START, block.end - MIN_DUR);
+        preview = sorted.map((b, i) => (i === d.index ? { start: ns, end: block.end } : b));
+      } else {
+        const ne = clamp(cur, block.start + MIN_DUR, next ? next.start : DAY_END);
+        preview = sorted.map((b, i) => (i === d.index ? { start: block.start, end: ne } : b));
       }
     }
 
-    setDrag({ ...drag, moved, preview });
+    setGesture({ ...d, moved, preview });
   }
 
-  function onPointerUp(e) {
-    if (!drag) return;
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
-
-    if (!drag.moved) {
-      if (drag.mode === "create") setSelected(null);
-      else setSelected((prev) => (prev === drag.index ? null : drag.index));
-    } else if (drag.mode === "create" || drag.preview) {
-      commit(drag.preview);
-      setSelected(null);
+  function endGesture(e, doCommit) {
+    const d = dragRef.current;
+    dragRef.current = null;
+    try {
+      containerRef.current?.releasePointerCapture?.(e.pointerId);
+    } catch {
+      /* pointer may already be released */
+    }
+    if (d) {
+      if (doCommit) {
+        if (d.mode === "split" && !d.moved) doSplit(d.index, d.downMin);
+        else if ((d.mode === "create" || d.mode === "resize") && d.moved) commit(d.preview);
+      }
+      if (d.moved) suppressClickRef.current = true;
     }
     setDrag(null);
   }
 
-  function removeBlock(index) {
-    const list = toItems(ranges).filter((_, i) => i !== index);
-    setSelected(null);
-    setSplitArmed(null);
-    commit(list);
+  function onClickCapture(e) {
+    // Prevent the synthetic click after a drag from reaching child handlers (e.g. split/delete).
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      e.stopPropagation();
+    }
   }
+
+  function removeBlock(index) {
+    commit(toItems(ranges).filter((_, i) => i !== index));
+  }
+
+  const cursor = disabled
+    ? "default"
+    : drag?.mode === "resize" || hover?.type === "edge"
+      ? "ew-resize"
+      : hover?.type === "split"
+        ? "crosshair"
+        : "default";
+
+  const hourCount = SPAN / 60;
+  const lineColor = "color-mix(in srgb, var(--color-text) 14%, transparent)";
+  const halfLineColor = "color-mix(in srgb, var(--color-text) 7%, transparent)";
 
   return (
     <div>
-      <div className="flex items-center justify-between text-xs text-[color-mix(in srgb, var(--color-text) 55%, transparent)]">
-        <span>{items.length}/{MAX_RANGES} aralık</span>
-        {splitArmed !== null && <span className="text-[var(--color-primary)] font-medium">Bölmek için blok içinde bir noktaya tıklayın</span>}
+      <div className="overflow-x-auto">
+        <div
+          ref={containerRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={(e) => endGesture(e, true)}
+          onPointerCancel={(e) => endGesture(e, false)}
+          onLostPointerCapture={(e) => dragRef.current && endGesture(e, false)}
+          onClickCapture={onClickCapture}
+          onPointerLeave={() => setHover(null)}
+          className="relative select-none rounded-xl border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-primary)_4%,var(--color-bg))] shadow-inner"
+          style={{ cursor, touchAction: "none", width: "100%", minWidth: MIN_WIDTH, height: HEIGHT }}
+        >
+          {/* Hour lines + labels */}
+          {Array.from({ length: hourCount + 1 }, (_, i) => {
+            const m = DAY_START + i * 60;
+            const isLast = m === DAY_END;
+            return (
+              <div key={m} className="absolute top-0 bottom-0" style={{ left: `${pct(m)}%` }}>
+                <span
+                  className="absolute top-0.5 text-[11px] text-[color-mix(in_srgb,var(--color-text)_50%,transparent)]"
+                  style={isLast ? { right: 2 } : { left: 2 }}
+                >
+                  {fmt(m)}
+                </span>
+                <span className="absolute top-5 bottom-0" style={{ borderLeft: `1px solid ${lineColor}` }} />
+              </div>
+            );
+          })}
+          {/* Half-hour lines */}
+          {Array.from({ length: hourCount }, (_, i) => {
+            const m = DAY_START + i * 60 + 30;
+            return (
+              <div
+                key={m}
+                className="absolute top-5 bottom-0"
+                style={{ left: `${pct(m)}%`, borderLeft: `1px solid ${halfLineColor}` }}
+              />
+            );
+          })}
+
+          {/* Split preview line */}
+          {!drag && hover?.type === "split" && !coarse && (() => {
+            const block = items[hover.index];
+            if (!block) return null;
+            const ok = splitValid(block, hover.min);
+            const color = ok ? "var(--color-primary)" : "#dc2626";
+            return (
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{ left: `${pct(hover.min)}%`, top: TRACK_TOP, bottom: TRACK_BOTTOM, borderLeft: `2px dashed ${color}` }}
+              />
+            );
+          })()}
+
+          {/* Blocks */}
+          {items.map((block, i) => {
+            const activeStart = hover?.type === "edge" && hover.index === i && hover.edge === "start";
+            const activeEnd = hover?.type === "edge" && hover.index === i && hover.edge === "end";
+            return (
+              <div
+                key={i}
+                className="group absolute rounded-md border border-[var(--color-primary)] bg-[color-mix(in_srgb,var(--color-primary)_16%,transparent)] text-[var(--color-primary)] shadow-sm transition-shadow hover:shadow-md"
+                style={{ left: `${pct(block.start)}%`, width: `${pct(block.end) - pct(block.start)}%`, top: TRACK_TOP, bottom: TRACK_BOTTOM }}
+              >
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-semibold">
+                  {fmt(block.start)}–{fmt(block.end)}
+                </span>
+
+                {/* Resize handles */}
+                <span
+                  className="pointer-events-none absolute inset-y-0 left-0 w-2 rounded-l-md transition-colors"
+                  style={{ background: activeStart || coarse ? "color-mix(in srgb, var(--color-primary) 45%, transparent)" : "transparent" }}
+                />
+                <span
+                  className="pointer-events-none absolute inset-y-0 right-0 w-2 rounded-r-md transition-colors"
+                  style={{ background: activeEnd || coarse ? "color-mix(in srgb, var(--color-primary) 45%, transparent)" : "transparent" }}
+                />
+
+                {/* Delete button */}
+                <button
+                  type="button"
+                  aria-label="Müsaitlik aralığını sil"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => removeBlock(i)}
+                  className={`absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-red-600 shadow ring-1 ring-red-200 transition ${
+                    coarse ? "opacity-100" : "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
+                  } hover:bg-red-50`}
+                >
+                  <span className="text-sm leading-none">×</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div
-        ref={containerRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        className={`relative mt-2 select-none rounded-lg border border-[var(--color-border)] ${
-          disabled ? "opacity-50" : splitArmed !== null ? "cursor-crosshair" : "cursor-pointer"
-        }`}
-        style={{ height: TOTAL_PX, touchAction: "none" }}
-      >
-        {/* Hour grid */}
-        {Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => {
-          const m = DAY_START + i * 60;
-          return (
-            <div key={m} className="absolute left-0 right-0 flex" style={{ top: minToPx(m) }}>
-              <span className="w-12 -translate-y-2 pl-2 text-[11px] text-[color-mix(in srgb, var(--color-text) 50%, transparent)]">
-                {fmt(m)}
-              </span>
-              <span className="flex-1 border-t border-[var(--color-border)]" />
-            </div>
-          );
-        })}
-        {/* Half-hour faint lines */}
-        {Array.from({ length: (DAY_END - DAY_START) / 60 }, (_, i) => {
-          const m = DAY_START + i * 60 + 30;
-          return (
-            <div
-              key={m}
-              className="absolute left-12 right-0 border-t border-dashed border-[color-mix(in srgb, var(--color-border) 60%, transparent)]"
-              style={{ top: minToPx(m) }}
-            />
-          );
-        })}
-
-        {/* Blocks */}
-        {items.map((block, i) => {
-          const top = minToPx(block.start);
-          const height = minToPx(block.end) - top;
-          const isSelected = selected === i && !drag;
-          return (
-            <div
-              key={i}
-              className="absolute left-12 right-1 rounded-md border bg-[color-mix(in srgb, var(--color-primary) 16%, transparent)] border-[var(--color-primary)] text-[var(--color-primary)]"
-              style={{ top, height }}
-            >
-              <span className="pointer-events-none absolute inset-x-0 top-1 text-center text-xs font-semibold">
-                {fmt(block.start)}–{fmt(block.end)}
-              </span>
-              <span className="pointer-events-none absolute inset-x-0 top-0 h-2 cursor-ns-resize" />
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 h-2 cursor-ns-resize" />
-
-              {isSelected && (
-                <div className="absolute right-1 bottom-1 flex gap-1" onPointerDown={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => setSplitArmed(i)}
-                    className="h-6 px-2 rounded bg-white/90 border border-[var(--color-primary)] text-[11px] font-medium hover:bg-white"
-                  >
-                    Böl
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeBlock(i)}
-                    className="h-6 px-2 rounded bg-white/90 border border-red-300 text-[11px] font-medium text-red-700 hover:bg-white"
-                  >
-                    Sil
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="mt-2 text-xs text-[color-mix(in srgb, var(--color-text) 55%, transparent)]">
-        Boş alanı sürükleyerek aralık ekleyin. Blokları taşıyın, kenarlardan boyutlandırın veya seçip bölün.
+      {invalid && (
+        <p className="mt-1.5 text-xs font-medium text-red-600">Bölme noktası çok yakın (en az 30 dakika).</p>
+      )}
+      <p className="mt-1.5 text-[11px] text-[color-mix(in_srgb,var(--color-text)_55%,transparent)]">
+        Boş alanı sürükleyerek aralık ekleyin. Kenarlardan boyutlandırın, ortasına tıklayarak bölün, × ile silin.
       </p>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { addDays, toDateKey } from "./appointments";
 import {
   buildMonthGrid,
@@ -33,6 +34,7 @@ function keyInMonth(key, viewDate) {
 }
 
 export default function Musaitlik() {
+  const { setHeaderContent } = useOutletContext();
   const todayKey = toDateKey(new Date());
 
   const [viewDate, setViewDate] = useState(() => {
@@ -201,15 +203,16 @@ export default function Musaitlik() {
 
   const hasSelection = sortedSelected.length > 0;
 
-  return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Müsaitlik</h1>
+  // Publish the page title and the multi-select toggle into the admin top bar.
+  useEffect(() => {
+    setHeaderContent({
+      title: "Müsaitlik",
+      actions: (
         <button
           type="button"
           onClick={() => setMultiSelect((v) => !v)}
           aria-pressed={multiSelect}
-          className={`h-9 px-4 rounded-lg text-sm font-medium border transition ${
+          className={`h-9 px-4 rounded-lg text-sm font-medium border transition shrink-0 ${
             multiSelect
               ? "border-[var(--color-primary)] bg-[var(--color-secondary)] text-[var(--color-primary)]"
               : "border-[var(--color-border)] hover:bg-[var(--color-secondary)]"
@@ -217,14 +220,19 @@ export default function Musaitlik() {
         >
           Çoklu Seçim {multiSelect ? "açık" : "kapalı"}
         </button>
-      </div>
+      ),
+    });
+    return () => setHeaderContent(null);
+  }, [multiSelect, setHeaderContent]);
 
+  return (
+    <div>
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {loading && (
         <p className="mt-4 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Yükleniyor...</p>
       )}
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-6">
+      <div className="mt-2 space-y-6">
         {/* Monthly calendar */}
         <div className="rounded-xl border border-[var(--color-border)] p-4 sm:p-5">
           <div className="flex items-center justify-between">
@@ -300,47 +308,54 @@ export default function Musaitlik() {
 
         {/* Selection editor */}
         <div className="rounded-xl border border-[var(--color-border)] p-4 sm:p-5">
-          <p className="text-xs text-[color-mix(in srgb, var(--color-text) 55%, transparent)]">Seçili günler</p>
-          <h2 className="font-semibold">{selectionSummary}</h2>
-
           {saveMsg && (
-            <p className={`mt-3 text-sm ${saveMsg.type === "ok" ? "text-green-700" : "text-red-600"}`}>
+            <p className={`text-sm ${saveMsg.type === "ok" ? "text-green-700" : "text-red-600"}`}>
               {saveMsg.text}
             </p>
           )}
 
           {!hasSelection ? (
-            <p className="mt-6 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
-              Takvimden gün seçtiğinizde günlük program burada görünür.
-            </p>
+            <div className={saveMsg ? "mt-3" : ""}>
+              <p className="text-xs text-[color-mix(in srgb, var(--color-text) 55%, transparent)]">Seçili günler</p>
+              <h2 className="font-semibold">{selectionSummary}</h2>
+              <p className="mt-6 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
+                Takvimden gün seçtiğinizde günlük program burada görünür.
+              </p>
+            </div>
           ) : (
             <>
               {mixed && (
-                <p className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-2 text-xs text-amber-800">
+                <p className={`rounded-lg bg-amber-50 border border-amber-200 p-2 text-xs text-amber-800 ${saveMsg ? "mt-3" : ""}`}>
                   Seçili günlerin mevcut programları farklı. Burada oluşturduğunuz program tüm seçili günlerin yerine
                   uygulanacaktır.
                 </p>
               )}
 
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDraft([{ start: "09:00", end: "18:00" }])}
-                  className="flex-1 h-9 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
-                >
-                  Tam Gün Müsait
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDraft([])}
-                  className="flex-1 h-9 rounded-lg text-sm font-medium border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
-                >
-                  Tüm Günü Kapat
-                </button>
-              </div>
+              <div className={`flex flex-col sm:flex-row gap-3 ${saveMsg || mixed ? "mt-4" : ""}`}>
+                <div className="sm:w-44 sm:shrink-0 sm:self-start">
+                  <p className="text-xs text-[color-mix(in srgb, var(--color-text) 55%, transparent)]">Seçili günler</p>
+                  <h2 className="font-semibold">{selectionSummary}</h2>
+                  <div className="mt-3 flex sm:flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDraft([{ start: "09:00", end: "18:00" }])}
+                      className="flex-1 sm:flex-none h-9 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
+                    >
+                      Tam Gün Müsait
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDraft([])}
+                      className="flex-1 sm:flex-none h-9 rounded-lg text-sm font-medium border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
+                    >
+                      Tüm Günü Kapat
+                    </button>
+                  </div>
+                </div>
 
-              <div className="mt-4">
-                <AvailabilityTimeline ranges={draft} onChange={setDraft} />
+                <div className="flex-1 min-w-0 sm:self-center">
+                  <AvailabilityTimeline ranges={draft} onChange={setDraft} />
+                </div>
               </div>
 
               <div className="mt-4 flex gap-2 border-t border-[var(--color-border)] pt-4">

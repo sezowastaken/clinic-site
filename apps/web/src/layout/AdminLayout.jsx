@@ -71,6 +71,8 @@ export default function AdminLayout() {
   const [appointmentsError, setAppointmentsError] = useState("");
   const [modalState, setModalState] = useState({ open: false, initialDate: null, initialTime: null });
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  // A routed page may register a centered title and right-side actions in the top bar.
+  const [headerContent, setHeaderContent] = useState(null);
   const today = new Date().toLocaleDateString("tr-TR", {
     weekday: "long",
     day: "numeric",
@@ -149,8 +151,8 @@ export default function AdminLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="border-b border-[var(--color-border)] px-4 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="border-b border-[var(--color-border)] px-4 h-16 grid grid-cols-3 items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 justify-self-start">
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
@@ -167,13 +169,20 @@ export default function AdminLayout() {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openNewAppointmentModal()}
-            className="h-9 px-4 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md shrink-0"
-          >
-            + Yeni Randevu
-          </button>
+          <div className="justify-self-center min-w-0 text-center font-semibold truncate">
+            {headerContent?.title}
+          </div>
+
+          <div className="flex items-center gap-2 justify-self-end">
+            {headerContent?.actions}
+            <button
+              type="button"
+              onClick={() => openNewAppointmentModal()}
+              className="h-9 px-4 rounded-lg text-sm font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md shrink-0"
+            >
+              + Yeni Randevu
+            </button>
+          </div>
         </header>
 
         {/* Mobile nav panel */}
@@ -199,6 +208,7 @@ export default function AdminLayout() {
               appointmentsError,
               openNewAppointmentModal,
               refreshPendingCount,
+              setHeaderContent,
             }}
           />
         </main>
