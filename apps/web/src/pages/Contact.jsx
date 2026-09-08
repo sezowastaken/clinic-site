@@ -1,17 +1,38 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Container, SectionLabel } from "../shared/ui";
 
 export default function Contact() {
+  const [submitError, setSubmitError] = useState("");
   const {
     register,
     handleSubmit,
     formState: { isSubmitting, isSubmitSuccessful },
   } = useForm();
 
-  // İletişim formu şu an istemci tarafında bir taleple sonuçlanır; hasta
-  // verisi konsola yazılmaz.
-  const onSubmit = () => {};
+  async function onSubmit(values) {
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name,
+          phone: values.phone,
+          email: values.email || undefined,
+          message: values.notes || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error?.message || "Mesaj gönderilemedi.");
+      }
+    } catch (err) {
+      setSubmitError(err.message || "Mesaj gönderilemedi. Lütfen tekrar deneyin.");
+      throw err;
+    }
+  }
 
   return (
     <section className="bg-ivory">
@@ -115,12 +136,18 @@ export default function Contact() {
                 {isSubmitting ? "Gönderiliyor..." : "Gönder"}
               </button>
 
-              {isSubmitSuccessful && (
+              {isSubmitSuccessful && !submitError && (
                 <p
                   role="status"
                   className="rounded-lg border border-sage/40 bg-sage-surface px-4 py-3 text-sm text-charcoal"
                 >
                   Teşekkürler! Mesajınız alındı, en kısa sürede size dönüş yapacağız.
+                </p>
+              )}
+
+              {submitError && (
+                <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitError}
                 </p>
               )}
             </form>

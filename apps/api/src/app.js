@@ -4,7 +4,9 @@ import authRouter from "./routes/auth.js";
 import adminAppointmentsRouter from "./routes/admin-appointments.js";
 import adminAvailabilityRouter from "./routes/admin-availability.js";
 import adminDashboardRouter from "./routes/admin-dashboard.js";
+import adminMessagesRouter from "./routes/admin-messages.js";
 import publicBookingRouter from "./routes/public-booking.js";
+import contactRouter from "./routes/contact.js";
 
 export function createApp() {
   const app = express();
@@ -23,7 +25,9 @@ export function createApp() {
   app.use("/api/admin/appointments", adminAppointmentsRouter);
   app.use("/api/admin/availability", adminAvailabilityRouter);
   app.use("/api/admin/dashboard", adminDashboardRouter);
+  app.use("/api/admin/messages", adminMessagesRouter);
   app.use("/api/public", publicBookingRouter);
+  app.use("/api/contact", contactRouter);
 
   app.use((err, req, res, next) => {
     console.error(err);

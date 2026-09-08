@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { doctor } from "../content/doctor";
 import { fetchAppointments, createAppointment, mapAppointmentFromApi } from "../pages/admin/appointments";
+import { fetchMessages } from "../pages/admin/messages";
 import AppointmentFormModal from "../pages/admin/AppointmentFormModal";
 import { useAuth } from "../auth/AuthContext.jsx";
 
@@ -9,10 +10,11 @@ const NAV_ITEMS = [
   { label: "Özet", to: "/admin", enabled: true },
   { label: "Takvim", to: "/admin/takvim", enabled: true },
   { label: "Site İstekleri", to: "/admin/istekler", enabled: true },
+  { label: "Mesajlar", to: "/admin/mesajlar", enabled: true },
   { label: "Müsaitlik", to: "/admin/musaitlik", enabled: true },
 ];
 
-function SidebarNav({ onNavigate, pendingRequestsCount }) {
+function SidebarNav({ onNavigate, badges }) {
   return (
     <nav className="flex flex-col gap-1">
       {NAV_ITEMS.map((item) =>
@@ -34,14 +36,14 @@ function SidebarNav({ onNavigate, pendingRequestsCount }) {
             {({ isActive }) => (
               <>
                 <span>{item.label}</span>
-                {item.label === "Site İstekleri" && pendingRequestsCount > 0 && (
+                {badges[item.label] > 0 && (
                   <span
                     className={[
                       "ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold",
                       isActive ? "bg-white/90 text-[var(--color-primary)]" : "bg-[var(--color-primary)] text-white",
                     ].join(" ")}
                   >
-                    {pendingRequestsCount}
+                    {badges[item.label]}
                   </span>
                 )}
               </>
@@ -71,6 +73,7 @@ export default function AdminLayout() {
   const [appointmentsError, setAppointmentsError] = useState("");
   const [modalState, setModalState] = useState({ open: false, initialDate: null, initialTime: null });
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   // A routed page may register a centered title and right-side actions in the top bar.
   const [headerContent, setHeaderContent] = useState(null);
   const today = new Date().toLocaleDateString("tr-TR", {
@@ -102,10 +105,20 @@ export default function AdminLayout() {
     }
   }, []);
 
+  const refreshUnreadMessagesCount = useCallback(async () => {
+    try {
+      const data = await fetchMessages({ isRead: "false" });
+      setUnreadMessagesCount(data.total);
+    } catch {
+      /* sidebar badge is non-critical; ignore transient errors */
+    }
+  }, []);
+
   useEffect(() => {
     loadAppointments();
     refreshPendingCount();
-  }, [loadAppointments, refreshPendingCount]);
+    refreshUnreadMessagesCount();
+  }, [loadAppointments, refreshPendingCount, refreshUnreadMessagesCount]);
 
   function openNewAppointmentModal(prefill = {}) {
     setModalState({ open: true, initialDate: prefill.date ?? null, initialTime: prefill.time ?? null });
@@ -139,7 +152,7 @@ export default function AdminLayout() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-60 md:shrink-0 md:flex-col border-r border-[var(--color-border)] p-4">
         <div className="font-display text-lg mb-6">{doctor.name}</div>
-        <SidebarNav pendingRequestsCount={pendingRequestsCount} />
+        <SidebarNav badges={{ "Site İstekleri": pendingRequestsCount, Mesajlar: unreadMessagesCount }} />
         <button
           type="button"
           onClick={handleLogout}
@@ -189,7 +202,10 @@ export default function AdminLayout() {
         {mobileOpen && (
           <div className="md:hidden border-b border-[var(--color-border)] p-4">
             <div className="font-display text-lg mb-3">{doctor.name}</div>
-            <SidebarNav onNavigate={() => setMobileOpen(false)} pendingRequestsCount={pendingRequestsCount} />
+            <SidebarNav
+              onNavigate={() => setMobileOpen(false)}
+              badges={{ "Site İstekleri": pendingRequestsCount, Mesajlar: unreadMessagesCount }}
+            />
             <button
               type="button"
               onClick={handleLogout}
@@ -207,7 +223,9 @@ export default function AdminLayout() {
               appointmentsLoading,
               appointmentsError,
               openNewAppointmentModal,
+              refreshAppointments: loadAppointments,
               refreshPendingCount,
+              refreshUnreadMessagesCount,
               setHeaderContent,
             }}
           />

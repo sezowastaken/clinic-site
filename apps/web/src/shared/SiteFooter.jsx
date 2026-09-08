@@ -5,7 +5,6 @@ const NAV_LINKS = [
   { to: "/", label: "Ana Sayfa" },
   { to: "/hakkinda", label: "Hakkında" },
   { to: "/hizmetler", label: "Hizmetler" },
-  { to: "/videolar", label: "Videolar" },
   { to: "/iletisim", label: "İletişim" },
 ];
 

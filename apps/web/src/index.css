@@ -11,7 +11,7 @@
 @theme {
   --font-sans: "Libre Franklin", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Arial, sans-serif;
-  --font-serif: "Bodoni Moda", ui-serif, Georgia, "Times New Roman", serif;
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
 
   --color-parchment: #f3ece2;
   --color-ivory: #fcf8f2;
@@ -76,10 +76,13 @@
     text-transform: uppercase;
   }
 
-  /* Editorial serif display. */
+  /* Editorial serif display. Fraunces at 500 with a touch of optical-size
+     boost reads far more clearly at small sizes than a Didone at 400 would,
+     while keeping the elegant, editorial character. */
   .font-display {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-optical-sizing: auto;
+    font-weight: 500;
     letter-spacing: -0.01em;
   }
 

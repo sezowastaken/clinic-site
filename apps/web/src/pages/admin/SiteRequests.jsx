@@ -69,7 +69,7 @@ function RequestCard({ request, children }) {
 }
 
 export default function SiteRequests() {
-  const { refreshPendingCount } = useOutletContext();
+  const { refreshAppointments, refreshPendingCount } = useOutletContext();
   const [tab, setTab] = useState("pending");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -130,7 +130,7 @@ export default function SiteRequests() {
     setActionState({ id: request.id, error: "" });
     try {
       await approveRequestApi(request.id);
-      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount()]);
+      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount(), refreshAppointments()]);
       setActionState({ id: null, error: "" });
     } catch (err) {
       setActionState({
@@ -147,7 +147,7 @@ export default function SiteRequests() {
     setActionState({ id: request.id, error: "" });
     try {
       await rejectRequestApi(request.id);
-      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount()]);
+      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount(), refreshAppointments()]);
       setActionState({ id: null, error: "" });
     } catch (err) {
       setActionState({ id: null, error: err.message || "Talep reddedilemedi." });
@@ -158,7 +158,7 @@ export default function SiteRequests() {
     setActionState({ id, error: "" });
     try {
       await editAndApproveRequest(id, updates);
-      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount()]);
+      await Promise.all([loadPending(), loadProcessed(), refreshPendingCount(), refreshAppointments()]);
       setActionState({ id: null, error: "" });
       return true;
     } catch (err) {

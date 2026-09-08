@@ -16,6 +16,7 @@ import AdminLogin from "./pages/admin/Login";
 import AdminOverview from "./pages/admin/Overview";
 import Takvim from "./pages/admin/Takvim";
 import SiteRequests from "./pages/admin/SiteRequests";
+import Mesajlar from "./pages/admin/Mesajlar";
 import Musaitlik from "./pages/admin/Musaitlik";
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
             <Route index element={<AdminOverview />} />
             <Route path="takvim" element={<Takvim />} />
             <Route path="istekler" element={<SiteRequests />} />
+            <Route path="mesajlar" element={<Mesajlar />} />
             <Route path="musaitlik" element={<Musaitlik />} />
           </Route>
         </Route>
