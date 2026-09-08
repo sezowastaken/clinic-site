@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { services as SERVICES, serviceCategories } from "../content/services";
 import { Container, SectionLabel } from "../shared/ui";
+import { CategoryIcon } from "../shared/icons";
+
+const CATEGORY_ICONS = { yuz: "face", meme: "breast", vucut: "body" };
 
 const FAQ = [
   {
@@ -46,26 +49,21 @@ function ServiceRow({ service }) {
 
 function CategoryBlock({ category, index }) {
   const items = SERVICES.filter((s) => s.category === category.name);
-  const imageFirst = index % 2 === 0;
 
   return (
     <section id={category.id} className="scroll-mt-24">
-      <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
-        <div className={imageFirst ? "" : "lg:order-2"}>
-          <div className="overflow-hidden rounded-2xl border border-beige bg-parchment">
-            <img
-              src={category.image}
-              alt={category.imageAlt}
-              className="aspect-[4/3] w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </div>
-        <div className={imageFirst ? "" : "lg:order-1"}>
-          <h3 className="font-display text-2xl text-charcoal sm:text-3xl">
+      <div className="flex items-start gap-6 border-t border-beige pt-8">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-beige bg-cream text-burgundy">
+          <CategoryIcon name={CATEGORY_ICONS[category.id]} />
+        </span>
+        <div>
+          <span className="font-display text-sm text-burgundy">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <h3 className="font-display mt-1 text-2xl text-charcoal sm:text-3xl">
             {category.name} Estetiği
           </h3>
-          <p className="mt-4 text-base leading-relaxed text-ink-muted">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-muted">
             {category.desc}
           </p>
         </div>
