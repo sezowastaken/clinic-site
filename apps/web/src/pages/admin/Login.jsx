@@ -36,7 +36,7 @@ export default function Login() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-[var(--color-bg)] text-[var(--color-text)] px-4">
       <div className="w-full max-w-sm rounded-xl border border-[var(--color-border)] p-6 sm:p-8">
-        <h1 className="text-xl font-bold text-center">{doctor.name}</h1>
+        <h1 className="font-display text-2xl text-center">{doctor.name}</h1>
         <p className="mt-1 text-center text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
           Personel Girişi
         </p>

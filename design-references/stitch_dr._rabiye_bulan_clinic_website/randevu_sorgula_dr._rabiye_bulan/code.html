@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Randevu Sorgula - Dr. Rabiye Bulan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&amp;family=Libre+Franklin:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#380b11",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed": "#dae6d4",
+                      "secondary-fixed-dim": "#becab8",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "background": "#fff8f3",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f6f0ea",
+                      "surface-bright": "#fff8f3",
+                      "on-tertiary-fixed": "#321200",
+                      "primary": "#5d292d",
+                      "surface-container-lowest": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#5a6657",
+                      "surface-tint": "#8a4d51",
+                      "surface-dim": "#dfd9d4",
+                      "surface-variant": "#e7e1dc",
+                      "tertiary": "#572f15",
+                      "surface-container-high": "#ede7e2",
+                      "on-secondary-fixed-variant": "#3f4a3c",
+                      "primary-container": "#793f43",
+                      "tertiary-fixed-dim": "#f7b995",
+                      "outline": "#857373",
+                      "primary-fixed-dim": "#ffb3b6",
+                      "surface": "#fff8f3",
+                      "outline-variant": "#d7c2c2",
+                      "surface-container-highest": "#e7e1dc",
+                      "surface-container-low": "#f9f2ed",
+                      "tertiary-fixed": "#ffdbc8",
+                      "on-primary-container": "#fcaeb2",
+                      "on-primary-fixed-variant": "#6e363a",
+                      "primary-fixed": "#ffdada",
+                      "secondary": "#566253",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#f3ede8",
+                      "on-surface-variant": "#524343",
+                      "secondary-container": "#d7e3d1",
+                      "on-tertiary-fixed-variant": "#673c21",
+                      "inverse-surface": "#32302d",
+                      "on-surface": "#1d1b18",
+                      "on-background": "#1d1b18",
+                      "tertiary-container": "#724529",
+                      "on-tertiary-container": "#f3b592",
+                      "on-secondary-fixed": "#141e13",
+                      "inverse-primary": "#ffb3b6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "gutter": "24px",
+                      "container-max": "1200px",
+                      "section-gap": "120px",
+                      "margin-mobile": "20px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Bodoni Moda"
+                      ],
+                      "headline-sm": [
+                              "Bodoni Moda"
+                      ],
+                      "body-md": [
+                              "Libre Franklin"
+                      ],
+                      "body-lg": [
+                              "Libre Franklin"
+                      ],
+                      "label-caps": [
+                              "Libre Franklin"
+                      ],
+                      "display-lg-mobile": [
+                              "Bodoni Moda"
+                      ],
+                      "headline-md": [
+                              "Bodoni Moda"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "64px",
+                              {
+                                      "lineHeight": "72px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .medical-focus-ring:focus-within {
+            border-color: #5a6657; /* secondary */
+            outline: none;
+        }
+        .form-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .luxury-card-hover:hover {
+            background-color: rgba(218, 230, 212, 0.2); /* secondary-container with low opacity */
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col pt-[80px]">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline transition-all ease-in-out duration-400">
+<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+<a class="font-display-lg text-headline-sm text-primary dark:text-inverse-primary tracking-tight" href="#">Dr. Rabiye Bulan</a>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Ana Sayfa</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Hakkında</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Hizmetler</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Videolar</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">İletişim</a>
+</nav>
+<div class="hidden md:flex items-center space-x-4">
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary pb-1 font-body-md text-body-md hover:text-primary transition-colors duration-300" href="#">Randevu Sorgula</a>
+<a class="bg-primary text-on-primary px-6 py-2 rounded-DEFAULT hover:bg-primary-container transition-colors duration-300 font-body-md text-body-md" href="#">Randevu Al</a>
+</div>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center py-section-gap px-gutter md:px-0">
+<div class="max-w-container-max w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter lg:gap-16">
+<!-- Left Column: Form (7 columns) -->
+<div class="md:col-span-7 flex flex-col justify-center space-y-8">
+<div class="space-y-4">
+<h1 class="font-display-lg text-display-lg text-primary">Randevu Durumu</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        Mevcut randevunuzun durumunu öğrenmek için lütfen bilgilerinizi girin. Süreçle ilgili en güncel bilgiyi buradan takip edebilirsiniz.
+                    </p>
+</div>
+<form class="space-y-6 max-w-md">
+<div class="space-y-2">
+<label class="block font-label-caps text-label-caps text-on-surface uppercase" for="fullName">Ad Soyad</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface p-3 rounded-DEFAULT focus:ring-0 focus:border-secondary form-transition" id="fullName" name="fullName" placeholder="Örn: Ayşe Yılmaz" required="" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block font-label-caps text-label-caps text-on-surface uppercase" for="phone">Telefon Numarası</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface p-3 rounded-DEFAULT focus:ring-0 focus:border-secondary form-transition" id="phone" name="phone" placeholder="05XX XXX XX XX" required="" type="tel"/>
+</div>
+<button class="w-full bg-primary text-on-primary py-4 rounded-DEFAULT font-body-lg text-body-lg hover:bg-primary-container transition-colors duration-300 flex justify-center items-center group relative overflow-hidden" onclick="simulateLoading(this)" type="button">
+<span class="relative z-10 transition-opacity duration-300">Sorgula</span>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 loading-spinner">
+<span class="material-symbols-outlined animate-spin" style="font-variation-settings: 'FILL' 0;">refresh</span>
+</div>
+</button>
+<!-- Error State Message (Hidden by default) -->
+<div class="hidden text-error font-body-md text-body-md flex items-center mt-2 p-3 bg-error-container rounded-DEFAULT" id="errorMessage">
+<span class="material-symbols-outlined mr-2" style="font-variation-settings: 'FILL' 1;">error</span>
+                        Lütfen geçerli bir telefon numarası giriniz.
+                    </div>
+</form>
+</div>
+<!-- Right Column: Status Info (5 columns) -->
+<div class="md:col-span-5 flex flex-col justify-center space-y-10 border-t md:border-t-0 md:border-l border-outline-variant pt-10 md:pt-0 md:pl-10 lg:pl-16">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6">Durum Açıklamaları</h2>
+<div class="space-y-6">
+<!-- Status: Talep Alındı -->
+<div class="flex items-start luxury-card-hover p-4 -ml-4 rounded-DEFAULT form-transition">
+<div class="flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+<div class="ml-4">
+<h3 class="font-body-lg text-body-lg text-on-surface mb-1">Talep Alındı</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Randevu talebiniz sistemimize ulaşmıştır, ekibimiz tarafından inceleme sırasına alınmıştır.</p>
+</div>
+</div>
+<!-- Status: İnceleniyor -->
+<div class="flex items-start luxury-card-hover p-4 -ml-4 rounded-DEFAULT form-transition">
+<div class="flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">hourglass_empty</span>
+</div>
+<div class="ml-4">
+<h3 class="font-body-lg text-body-lg text-on-surface mb-1">İnceleniyor</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Doktorumuz ve ekibimiz müsaitlik durumuna göre talebinizi değerlendirmektedir.</p>
+</div>
+</div>
+<!-- Status: Onaylandı -->
+<div class="flex items-start luxury-card-hover p-4 -ml-4 rounded-DEFAULT form-transition">
+<div class="flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="ml-4">
+<h3 class="font-body-lg text-body-lg text-on-surface mb-1">Onaylandı</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Randevunuz kesinleşmiştir. Detaylı bilgi SMS ile iletilmiştir.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-4 pt-6 border-t border-outline-variant/30">
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-sm align-middle mr-1" style="font-variation-settings: 'FILL' 0;">lock</span>
+                        Bilgileriniz KVKK kapsamında korunmaktadır.
+                    </p>
+<a class="inline-flex items-center text-on-surface hover:text-primary transition-colors duration-300 border-b border-on-surface hover:border-primary pb-0.5 font-body-md text-body-md" href="#">
+                        Destek Ekibi ile İletişime Geç
+                        <span class="material-symbols-outlined text-sm ml-1" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full pt-section-gap pb-base bg-inverse-surface dark:bg-surface-container-lowest border-t border-on-surface-variant/20 transition-opacity duration-300">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-gutter max-w-container-max mx-auto">
+<div class="md:col-span-1 space-y-4">
+<div class="font-display-lg text-headline-md text-surface-bright">Dr. Rabiye Bulan</div>
+<p class="font-body-md text-body-md text-surface-variant/80">Estetik ve Plastik Cerrahi Uzmanı</p>
+</div>
+<div class="md:col-span-1">
+<h4 class="font-label-caps text-label-caps text-surface-variant uppercase mb-4">Hızlı Bağlantılar</h4>
+<ul class="space-y-2">
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Ana Sayfa</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Hakkında</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Hizmetler</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Videolar</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">İletişim</a></li>
+</ul>
+</div>
+<div class="md:col-span-1">
+<h4 class="font-label-caps text-label-caps text-surface-variant uppercase mb-4">Yasal</h4>
+<ul class="space-y-2">
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Gizlilik Politikası</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">KVKK Aydınlatma Metni</a></li>
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Çerez Politikası</a></li>
+</ul>
+</div>
+<div class="md:col-span-1">
+<h4 class="font-label-caps text-label-caps text-surface-variant uppercase mb-4">Kurumsal</h4>
+<ul class="space-y-2">
+<li><a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Personel Girişi</a></li>
+</ul>
+</div>
+</div>
+<div class="mt-16 text-center border-t border-surface-variant/10 pt-8">
+<p class="font-body-md text-body-md text-surface-variant/60">© 2024 Dr. Rabiye Bulan. Tüm Hakları Saklıdır.</p>
+</div>
+</footer>
+<script>
+        function simulateLoading(button) {
+            const textSpan = button.querySelector('span:not(.material-symbols-outlined)');
+            const spinnerDiv = button.querySelector('.loading-spinner');
+            const errorMsg = document.getElementById('errorMessage');
+            const phoneInput = document.getElementById('phone');
+
+            // Basic validation check to show error state
+            if(phoneInput.value.trim() === '') {
+                errorMsg.classList.remove('hidden');
+                phoneInput.classList.add('border-error');
+                phoneInput.classList.remove('border-outline-variant');
+                return;
+            } else {
+                 errorMsg.classList.add('hidden');
+                 phoneInput.classList.remove('border-error');
+                 phoneInput.classList.add('border-outline-variant');
+            }
+
+            // Simulate loading
+            textSpan.style.opacity = '0';
+            spinnerDiv.style.opacity = '1';
+            button.disabled = true;
+
+            setTimeout(() => {
+                textSpan.style.opacity = '1';
+                spinnerDiv.style.opacity = '0';
+                button.disabled = false;
+                
+                // Simulate success state (optional, just resetting here)
+                phoneInput.value = '';
+                document.getElementById('fullName').value = '';
+                
+            }, 2000);
+        }
+    </script>
+</body></html>

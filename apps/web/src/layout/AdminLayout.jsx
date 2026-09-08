@@ -138,7 +138,7 @@ export default function AdminLayout() {
     <div className="min-h-dvh flex bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-60 md:shrink-0 md:flex-col border-r border-[var(--color-border)] p-4">
-        <div className="font-semibold mb-6">{doctor.name}</div>
+        <div className="font-display text-lg mb-6">{doctor.name}</div>
         <SidebarNav pendingRequestsCount={pendingRequestsCount} />
         <button
           type="button"
@@ -188,7 +188,7 @@ export default function AdminLayout() {
         {/* Mobile nav panel */}
         {mobileOpen && (
           <div className="md:hidden border-b border-[var(--color-border)] p-4">
-            <div className="font-semibold mb-3">{doctor.name}</div>
+            <div className="font-display text-lg mb-3">{doctor.name}</div>
             <SidebarNav onNavigate={() => setMobileOpen(false)} pendingRequestsCount={pendingRequestsCount} />
             <button
               type="button"

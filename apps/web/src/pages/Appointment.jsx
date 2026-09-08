@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { services } from "../content/services";
 import { fetchAvailability, submitAppointmentRequest } from "../api/public-booking";
+import { Container } from "../shared/ui";
 
 const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTHS = [
@@ -33,6 +34,19 @@ function monthRange(viewDate) {
     dateFrom: toDateKey(new Date(year, month, 1)),
     dateTo: toDateKey(new Date(year, month + 1, 0)),
   };
+}
+
+function SummaryRow({ label, value, placeholder }) {
+  return (
+    <div>
+      <p className="label-caps text-ink-muted">{label}</p>
+      {value ? (
+        <p className="mt-1 text-sm font-medium text-charcoal">{value}</p>
+      ) : (
+        <p className="mt-1 text-sm italic text-ink-muted/70">{placeholder}</p>
+      )}
+    </div>
+  );
 }
 
 export default function Appointment() {
@@ -165,363 +179,376 @@ export default function Appointment() {
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-secondary)] text-[var(--color-primary)]">
-          <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Randevu talebiniz alındı</h1>
-        <p className="mt-3 text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
-          {selectedService?.title} için {selectedDate?.toLocaleDateString("tr-TR")} tarihinde saat{" "}
-          {selectedSlot?.label} talebiniz alınmıştır. Bu bir kesin randevu değildir; klinik onayını bekleyen
-          bir taleptir. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
-        </p>
+      <section className="bg-ivory">
+        <Container className="max-w-xl py-20 text-center sm:py-24">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-sage-surface text-sage">
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1 className="font-display text-3xl text-charcoal sm:text-4xl">
+            Randevu talebiniz alındı
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-ink-muted">
+            {selectedService?.title} için {selectedDate?.toLocaleDateString("tr-TR")} tarihinde saat{" "}
+            {selectedSlot?.label} talebiniz alınmıştır. Bu bir kesin randevu değildir; klinik onayını bekleyen
+            bir taleptir. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
+          </p>
 
-        <p className="mt-6 text-sm text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
-          Randevu talebinizi adınız ve telefon numaranız ile sorgulayabilirsiniz.
-        </p>
-        <p className="mt-2 text-sm">
-          <Link
-            to="/randevu-sorgula"
-            className="underline underline-offset-2 hover:text-[var(--color-primary)] transition"
-          >
-            Randevu durumunu sorgula
-          </Link>
-        </p>
-      </div>
+          <p className="mt-6 text-sm text-ink-muted">
+            Randevu talebinizi adınız ve telefon numaranız ile sorgulayabilirsiniz.
+          </p>
+          <p className="mt-2">
+            <Link to="/randevu-sorgula" className="text-link">
+              Randevu durumunu sorgula
+            </Link>
+          </p>
+        </Container>
+      </section>
     );
   }
 
+  const dateLabel = selectedDate?.toLocaleDateString("tr-TR");
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">Randevu Al</h1>
-      <p className="mt-3 text-center text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
-        Aşağıdaki adımları tamamlayarak randevu talebi oluşturun. Talebiniz, klinik onayı sonrası
-        kesinleşir.
-      </p>
-
-      {/* Step indicator */}
-      <ol className="mt-8 flex items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
-        {STEP_LABELS.map((label, idx) => (
-          <li key={label} className="flex items-center gap-2 sm:gap-4">
-            <span
-              className={[
-                "flex h-7 w-7 items-center justify-center rounded-full font-semibold",
-                idx === step
-                  ? "bg-[var(--color-primary)] text-white"
-                  : idx < step
-                  ? "bg-[var(--color-secondary)] text-[var(--color-primary)]"
-                  : "bg-[var(--color-secondary)] text-[color-mix(in srgb, var(--color-text) 50%, transparent)]",
-              ].join(" ")}
-            >
-              {idx + 1}
-            </span>
-            <span className={idx === step ? "font-semibold" : "hidden sm:inline"}>{label}</span>
-            {idx < STEP_LABELS.length - 1 && <span className="hidden sm:inline text-[var(--color-border)]">—</span>}
-          </li>
-        ))}
-      </ol>
-
-      <div className="mt-10 rounded-2xl border border-[var(--color-border)] p-4 sm:p-8">
-        {/* Step 0: service selection */}
-        {step === 0 && (
+    <section className="bg-ivory">
+      <Container className="py-14 sm:py-20">
+        <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:gap-14">
+          {/* Main column */}
           <div>
-            <h2 className="text-lg font-semibold">Bir hizmet seçin</h2>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {services.map((s) => (
-                <button
-                  key={s.slug}
-                  type="button"
-                  onClick={() => setSelectedService(s)}
-                  className={[
-                    "text-left rounded-xl border p-4 transition hover:-translate-y-0.5 active:translate-y-0",
-                    selectedService?.slug === s.slug
-                      ? "border-[var(--color-primary)] bg-[var(--color-secondary)]"
-                      : "border-[var(--color-border)] hover:bg-[var(--color-secondary)]",
-                  ].join(" ")}
-                >
-                  <span className="font-semibold">{s.title}</span>
-                  <p className="mt-1 text-sm text-[color-mix(in srgb, var(--color-text) 70%, transparent)]">
-                    {s.desc}
-                  </p>
-                </button>
-              ))}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                disabled={!selectedService}
-                onClick={() => setStep(1)}
-                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
-              >
-                Devam Et
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1: date + time */}
-        {step === 1 && (
-          <div>
-            <h2 className="text-lg font-semibold">Tarih ve saat seçin</h2>
-
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => goToMonth(-1)}
-                className="h-9 w-9 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
-                aria-label="Önceki ay"
-              >
-                ‹
-              </button>
-              <span className="font-semibold">
-                {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
-              </span>
-              <button
-                type="button"
-                onClick={() => goToMonth(1)}
-                className="h-9 w-9 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
-                aria-label="Sonraki ay"
-              >
-                ›
-              </button>
-            </div>
-
-            {slotNotice && (
-              <p className="mt-4 text-sm text-red-600">{slotNotice}</p>
-            )}
-
-            {availabilityLoading && (
-              <p className="mt-4 text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
-                Müsaitlik yükleniyor...
-              </p>
-            )}
-            {availabilityError && <p className="mt-4 text-sm text-red-600">{availabilityError}</p>}
-
-            <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
-              {WEEKDAYS.map((w) => (
-                <div key={w} className="py-1">{w}</div>
-              ))}
-              {grid.map((date, idx) => {
-                if (!date) return <div key={idx} />;
-                const isPast = date < today;
-                const hasAvailability = (availabilityByDate.get(toDateKey(date)) || []).length > 0;
-                const isDisabled = isPast || availabilityLoading || !!availabilityError || !hasAvailability;
-                const isSelected = selectedDate && toDateKey(date) === toDateKey(selectedDate);
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    disabled={isDisabled}
-                    onClick={() => pickDate(date)}
-                    className={[
-                      "aspect-square rounded-lg text-sm transition",
-                      isDisabled
-                        ? "text-[color-mix(in srgb, var(--color-text) 30%, transparent)] cursor-not-allowed"
-                        : isSelected
-                        ? "bg-[var(--color-primary)] text-white font-semibold"
-                        : "hover:bg-[var(--color-secondary)]",
-                    ].join(" ")}
-                  >
-                    {date.getDate()}
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedDate && (
-              <div className="mt-6">
-                <h3 className="text-sm font-semibold mb-2">
-                  {selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" })}{" "}
-                  için müsait saatler
-                </h3>
-                {selectedDaySlots.length === 0 ? (
-                  <p className="text-sm text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
-                    Bu tarihte müsait saat bulunmuyor, lütfen başka bir gün seçin.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {selectedDaySlots.map((slot) => (
-                      <button
-                        key={slot.startsAt}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSlot(slot);
-                          setSlotNotice("");
-                        }}
-                        className={[
-                          "h-10 rounded-lg border text-sm transition",
-                          selectedSlot?.startsAt === slot.startsAt
-                            ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white font-semibold"
-                            : "border-[var(--color-border)] hover:bg-[var(--color-secondary)]",
-                        ].join(" ")}
-                      >
-                        {slot.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-6 flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(0)}
-                className="h-11 px-6 rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
-              >
-                Geri
-              </button>
-              <button
-                type="button"
-                disabled={!selectedDate || !selectedSlot || availabilityLoading || !!availabilityError}
-                onClick={() => setStep(2)}
-                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
-              >
-                Devam Et
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: patient info */}
-        {step === 2 && (
-          <form onSubmit={handleSubmit(onPatientSubmit)}>
-            <h2 className="text-lg font-semibold">Bilgileriniz</h2>
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm mb-1">Ad Soyad</label>
-                <input
-                  className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2"
-                  {...register("name", { required: true })}
-                />
-                {errors.name && <p className="text-sm text-red-600 mt-1">Ad soyad zorunludur.</p>}
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Telefon</label>
-                <input
-                  className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2"
-                  {...register("phone", { required: true })}
-                />
-                {errors.phone && <p className="text-sm text-red-600 mt-1">Telefon zorunludur.</p>}
-              </div>
-              <div>
-                <label className="block text-sm mb-1">E-posta (opsiyonel)</label>
-                <input
-                  className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2"
-                  {...register("email")}
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Not (opsiyonel)</label>
-                <textarea
-                  rows="3"
-                  className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2"
-                  {...register("note")}
-                />
-              </div>
-              <div>
-                <label className="flex items-start gap-2 text-sm">
-                  <input type="checkbox" className="mt-1" {...register("kvkk", { required: true })} />
-                  <span>
-                    <Link to="/kvkk" className="underline underline-offset-2 hover:text-[var(--color-primary)]">
-                      KVKK Aydınlatma Metni
-                    </Link>
-                    &apos;ni okudum ve kişisel verilerimin
-                    işlenmesini kabul ediyorum.
-                  </span>
-                </label>
-                {errors.kvkk && (
-                  <p className="text-sm text-red-600 mt-1">Devam etmek için KVKK onayı gereklidir.</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="h-11 px-6 rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition"
-              >
-                Geri
-              </button>
-              <button
-                type="submit"
-                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md"
-              >
-                Devam Et
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Step 3: review + submit */}
-        {step === 3 && patient && (
-          <div>
-            <h2 className="text-lg font-semibold">Talebinizi gözden geçirin</h2>
-            <dl className="mt-4 divide-y divide-[var(--color-border)] text-sm">
-              <div className="flex justify-between py-2">
-                <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Hizmet</dt>
-                <dd className="font-medium">{selectedService?.title}</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Tarih</dt>
-                <dd className="font-medium">{selectedDate?.toLocaleDateString("tr-TR")}</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Saat</dt>
-                <dd className="font-medium">{selectedSlot?.label}</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Ad Soyad</dt>
-                <dd className="font-medium">{patient.name}</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Telefon</dt>
-                <dd className="font-medium">{patient.phone}</dd>
-              </div>
-              {patient.email && (
-                <div className="flex justify-between py-2">
-                  <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">E-posta</dt>
-                  <dd className="font-medium">{patient.email}</dd>
-                </div>
-              )}
-              {patient.note && (
-                <div className="flex justify-between py-2 gap-4">
-                  <dt className="text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">Not</dt>
-                  <dd className="font-medium text-right">{patient.note}</dd>
-                </div>
-              )}
-            </dl>
-
-            <p className="mt-4 text-xs text-[color-mix(in srgb, var(--color-text) 60%, transparent)]">
-              Bu talep, klinik tarafından onaylanana kadar kesin randevu anlamına gelmez.
+            <h1 className="font-display text-4xl text-charcoal sm:text-5xl">Randevu Al</h1>
+            <p className="mt-3 text-base leading-relaxed text-ink-muted">
+              Lütfen randevu talebinizi oluşturmak için aşağıdaki adımları tamamlayın.
+              Talebiniz, klinik onayı sonrası kesinleşir.
             </p>
 
-            {submitError && <p className="mt-4 text-sm text-red-600">{submitError}</p>}
+            {/* Step indicator */}
+            <ol className="mt-8 flex items-center gap-2 sm:gap-3">
+              {STEP_LABELS.map((label, idx) => (
+                <li key={label} className="flex flex-1 items-center gap-2 sm:gap-3 last:flex-none">
+                  <span
+                    className={[
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+                      idx === step
+                        ? "bg-burgundy text-ivory"
+                        : idx < step
+                        ? "bg-burgundy/15 text-burgundy"
+                        : "bg-parchment text-ink-muted",
+                    ].join(" ")}
+                  >
+                    {idx + 1}
+                  </span>
+                  <span
+                    className={[
+                      "text-xs font-semibold uppercase tracking-wider",
+                      idx === step ? "text-charcoal" : "hidden text-ink-muted sm:inline",
+                    ].join(" ")}
+                  >
+                    {label}
+                  </span>
+                  {idx < STEP_LABELS.length - 1 && (
+                    <span className="hidden h-px flex-1 bg-beige sm:block" />
+                  )}
+                </li>
+              ))}
+            </ol>
 
-            <div className="mt-6 flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={submitting}
-                className="h-11 px-6 rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-secondary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Geri
-              </button>
-              <button
-                type="button"
-                onClick={confirmAndSubmit}
-                disabled={submitting}
-                className="h-11 px-6 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
-              >
-                {submitting ? "Gönderiliyor..." : "Onayla ve Gönder"}
-              </button>
+            <div className="mt-10">
+              {/* Step 0: service selection */}
+              {step === 0 && (
+                <div>
+                  <h2 className="font-display text-2xl text-charcoal">Hizmet Seçimi</h2>
+                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {services.map((s) => {
+                      const active = selectedService?.slug === s.slug;
+                      return (
+                        <button
+                          key={s.slug}
+                          type="button"
+                          onClick={() => setSelectedService(s)}
+                          aria-pressed={active}
+                          className={[
+                            "rounded-2xl border p-5 text-left transition-colors duration-300",
+                            active
+                              ? "border-burgundy bg-apricot-surface"
+                              : "border-beige bg-cream hover:border-sage",
+                          ].join(" ")}
+                        >
+                          <span className="font-display text-lg text-charcoal">{s.title}</span>
+                          <p className="mt-1 text-sm leading-relaxed text-ink-muted">{s.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      type="button"
+                      disabled={!selectedService}
+                      onClick={() => setStep(1)}
+                      className="btn-primary"
+                    >
+                      İleri: Tarih & Saat
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 1: date + time */}
+              {step === 1 && (
+                <div>
+                  <h2 className="font-display text-2xl text-charcoal">Tarih ve Saat</h2>
+
+                  <div className="mt-6 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => goToMonth(-1)}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-beige text-charcoal transition-colors hover:bg-parchment"
+                      aria-label="Önceki ay"
+                    >
+                      ‹
+                    </button>
+                    <span className="font-display text-lg text-charcoal">
+                      {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => goToMonth(1)}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-beige text-charcoal transition-colors hover:bg-parchment"
+                      aria-label="Sonraki ay"
+                    >
+                      ›
+                    </button>
+                  </div>
+
+                  {slotNotice && <p className="mt-4 text-sm text-[var(--color-error,#ba1a1a)]">{slotNotice}</p>}
+
+                  {availabilityLoading && (
+                    <p className="mt-4 text-sm text-ink-muted">Müsaitlik yükleniyor...</p>
+                  )}
+                  {availabilityError && (
+                    <p className="mt-4 text-sm text-[#ba1a1a]">{availabilityError}</p>
+                  )}
+
+                  <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-ink-muted">
+                    {WEEKDAYS.map((w) => (
+                      <div key={w} className="py-1 font-semibold">{w}</div>
+                    ))}
+                    {grid.map((date, idx) => {
+                      if (!date) return <div key={idx} />;
+                      const isPast = date < today;
+                      const hasAvailability = (availabilityByDate.get(toDateKey(date)) || []).length > 0;
+                      const isDisabled = isPast || availabilityLoading || !!availabilityError || !hasAvailability;
+                      const isSelected = selectedDate && toDateKey(date) === toDateKey(selectedDate);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => pickDate(date)}
+                          className={[
+                            "aspect-square rounded-lg text-sm transition-colors",
+                            isDisabled
+                              ? "cursor-not-allowed text-ink-muted/40"
+                              : isSelected
+                              ? "bg-burgundy font-semibold text-ivory"
+                              : "text-charcoal hover:bg-parchment",
+                          ].join(" ")}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedDate && (
+                    <div className="mt-6">
+                      <h3 className="mb-3 text-sm font-semibold text-charcoal">
+                        {selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" })}{" "}
+                        için müsait saatler
+                      </h3>
+                      {selectedDaySlots.length === 0 ? (
+                        <p className="text-sm text-ink-muted">
+                          Bu tarihte müsait saat bulunmuyor, lütfen başka bir gün seçin.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                          {selectedDaySlots.map((slot) => (
+                            <button
+                              key={slot.startsAt}
+                              type="button"
+                              onClick={() => {
+                                setSelectedSlot(slot);
+                                setSlotNotice("");
+                              }}
+                              className={[
+                                "h-11 rounded-lg border text-sm transition-colors",
+                                selectedSlot?.startsAt === slot.startsAt
+                                  ? "border-burgundy bg-burgundy font-semibold text-ivory"
+                                  : "border-beige text-charcoal hover:bg-parchment",
+                              ].join(" ")}
+                            >
+                              {slot.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex justify-between">
+                    <button type="button" onClick={() => setStep(0)} className="btn-secondary">
+                      Geri
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!selectedDate || !selectedSlot || availabilityLoading || !!availabilityError}
+                      onClick={() => setStep(2)}
+                      className="btn-primary"
+                    >
+                      İleri: Bilgileriniz
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: patient info */}
+              {step === 2 && (
+                <form onSubmit={handleSubmit(onPatientSubmit)}>
+                  <h2 className="font-display text-2xl text-charcoal">Bilgileriniz</h2>
+                  <div className="mt-6 space-y-5">
+                    <div>
+                      <label className="field-label" htmlFor="ap-name">Ad Soyad</label>
+                      <input id="ap-name" className="field-input" {...register("name", { required: true })} />
+                      {errors.name && <p className="mt-1 text-sm text-[#ba1a1a]">Ad soyad zorunludur.</p>}
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="ap-phone">Telefon</label>
+                      <input id="ap-phone" className="field-input" {...register("phone", { required: true })} />
+                      {errors.phone && <p className="mt-1 text-sm text-[#ba1a1a]">Telefon zorunludur.</p>}
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="ap-email">E-posta (opsiyonel)</label>
+                      <input id="ap-email" className="field-input" {...register("email")} />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="ap-note">Not (opsiyonel)</label>
+                      <textarea id="ap-note" rows="3" className="field-input resize-y" {...register("note")} />
+                    </div>
+                    <div>
+                      <label className="flex items-start gap-3 text-sm text-charcoal">
+                        <input type="checkbox" className="mt-1 accent-[#793f43]" {...register("kvkk", { required: true })} />
+                        <span>
+                          <Link to="/kvkk" className="text-link">KVKK Aydınlatma Metni</Link>
+                          &apos;ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
+                        </span>
+                      </label>
+                      {errors.kvkk && (
+                        <p className="mt-1 text-sm text-[#ba1a1a]">Devam etmek için KVKK onayı gereklidir.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex justify-between">
+                    <button type="button" onClick={() => setStep(1)} className="btn-secondary">
+                      Geri
+                    </button>
+                    <button type="submit" className="btn-primary">
+                      İleri: Onay
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Step 3: review + submit */}
+              {step === 3 && patient && (
+                <div>
+                  <h2 className="font-display text-2xl text-charcoal">Talebinizi gözden geçirin</h2>
+                  <dl className="mt-6 divide-y divide-beige rounded-2xl border border-beige bg-cream px-5 text-sm">
+                    <div className="flex justify-between py-3">
+                      <dt className="text-ink-muted">Hizmet</dt>
+                      <dd className="font-medium text-charcoal">{selectedService?.title}</dd>
+                    </div>
+                    <div className="flex justify-between py-3">
+                      <dt className="text-ink-muted">Tarih</dt>
+                      <dd className="font-medium text-charcoal">{dateLabel}</dd>
+                    </div>
+                    <div className="flex justify-between py-3">
+                      <dt className="text-ink-muted">Saat</dt>
+                      <dd className="font-medium text-charcoal">{selectedSlot?.label}</dd>
+                    </div>
+                    <div className="flex justify-between py-3">
+                      <dt className="text-ink-muted">Ad Soyad</dt>
+                      <dd className="font-medium text-charcoal">{patient.name}</dd>
+                    </div>
+                    <div className="flex justify-between py-3">
+                      <dt className="text-ink-muted">Telefon</dt>
+                      <dd className="font-medium text-charcoal">{patient.phone}</dd>
+                    </div>
+                    {patient.email && (
+                      <div className="flex justify-between py-3">
+                        <dt className="text-ink-muted">E-posta</dt>
+                        <dd className="font-medium text-charcoal">{patient.email}</dd>
+                      </div>
+                    )}
+                    {patient.note && (
+                      <div className="flex justify-between gap-4 py-3">
+                        <dt className="text-ink-muted">Not</dt>
+                        <dd className="text-right font-medium text-charcoal">{patient.note}</dd>
+                      </div>
+                    )}
+                  </dl>
+
+                  <p className="mt-4 text-xs leading-relaxed text-ink-muted">
+                    Bu talep, klinik tarafından onaylanana kadar kesin randevu anlamına gelmez.
+                  </p>
+
+                  {submitError && <p className="mt-4 text-sm text-[#ba1a1a]">{submitError}</p>}
+
+                  <div className="mt-8 flex justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      disabled={submitting}
+                      className="btn-secondary"
+                    >
+                      Geri
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmAndSubmit}
+                      disabled={submitting}
+                      className="btn-primary"
+                    >
+                      {submitting ? "Gönderiliyor..." : "Onayla ve Gönder"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* Summary sidebar */}
+          <aside className="lg:sticky lg:top-28 lg:self-start">
+            <div className="rounded-2xl border border-beige bg-cream p-6">
+              <h2 className="font-display text-xl text-charcoal">Randevu Özeti</h2>
+              <div className="mt-5 space-y-4 border-t border-beige pt-5">
+                <SummaryRow label="Seçilen Hizmet" value={selectedService?.title} placeholder="Henüz seçilmedi" />
+                <SummaryRow label="Tarih" value={dateLabel} placeholder="Henüz seçilmedi" />
+                <SummaryRow label="Saat" value={selectedSlot?.label} placeholder="Henüz seçilmedi" />
+                <SummaryRow
+                  label="İletişim Bilgileri"
+                  value={patient?.name ? `${patient.name} · ${patient.phone}` : null}
+                  placeholder="Henüz girilmedi"
+                />
+              </div>
+              <p className="mt-6 rounded-lg bg-parchment px-4 py-3 text-xs leading-relaxed text-ink-muted">
+                Talebiniz klinik onayına tabidir. Ekibimiz en kısa sürede sizinle
+                iletişime geçerek randevunuzu teyit eder.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </Container>
+    </section>
   );
 }

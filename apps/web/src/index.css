@@ -1,10 +1,129 @@
 @import "tailwindcss";
 
+/*
+  Warm Medical Editorial design system.
+  New palette + typography are registered as Tailwind theme tokens so the
+  utilities (bg-burgundy, text-charcoal, font-serif, ...) become available.
+  The legacy --color-* variables are remapped to the same palette so every
+  existing component (including the admin panel) inherits the new look
+  automatically without markup changes.
+*/
+@theme {
+  --font-sans: "Libre Franklin", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: "Bodoni Moda", ui-serif, Georgia, "Times New Roman", serif;
+
+  --color-parchment: #f3ece2;
+  --color-ivory: #fcf8f2;
+  --color-cream: #f8f1e8;
+  --color-charcoal: #211f1c;
+  --color-charcoal-soft: #32302d;
+  --color-burgundy: #793f43;
+  --color-burgundy-dark: #5d292d;
+  --color-sage: #7c8878;
+  --color-sage-surface: #dde4d7;
+  --color-apricot: #d49a78;
+  --color-apricot-surface: #f4e7db;
+  --color-beige: #d9cfc2;
+  --color-ink-muted: #6b5d57;
+}
+
 :root {
-  --color-bg: #ffffff;
-  --color-text: #111111;
-  --color-primary: #8a5cf6;      
-  --color-secondary: #f3e8ff;    
-  --color-accent: #ff80bf;       
-  --color-border: #dddddd;
+  /* Legacy semantic tokens, remapped to the warm palette. */
+  --color-bg: #fcf8f2;
+  --color-text: #211f1c;
+  --color-primary: #793f43;
+  --color-primary-hover: #5d292d;
+  --color-secondary: #efe6d9;
+  --color-accent: #d49a78;
+  --color-border: #d9cfc2;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /* Uppercase eyebrow / section overline. */
+  .label-caps {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  /* Editorial serif display. */
+  .font-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* Primary action — oxblood burgundy. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-6 text-sm font-semibold text-ivory transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burgundy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: var(--color-burgundy);
+    min-height: 3rem;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-burgundy-dark);
+  }
+
+  /* Secondary action — outlined. */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border px-6 text-sm font-semibold text-charcoal transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burgundy focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: var(--color-beige);
+    min-height: 3rem;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-charcoal);
+    background-color: var(--color-parchment);
+  }
+
+  /* Underlined text link. */
+  .text-link {
+    @apply font-medium text-charcoal underline decoration-1 underline-offset-4 transition-colors duration-300 hover:text-burgundy;
+  }
+
+  /* Form control. */
+  .field-input {
+    @apply w-full rounded-lg border bg-ivory px-4 py-3 text-base text-charcoal transition-colors duration-300 placeholder:text-ink-muted/60 focus:outline-none;
+    border-color: var(--color-beige);
+  }
+  .field-input:focus {
+    border-color: var(--color-sage);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sage) 30%, transparent);
+  }
+
+  .field-label {
+    @apply mb-2 block text-charcoal;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
 }

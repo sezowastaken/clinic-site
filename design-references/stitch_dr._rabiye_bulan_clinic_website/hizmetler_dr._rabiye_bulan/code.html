@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hizmetler - Dr. Rabiye Bulan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&amp;family=Libre+Franklin:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#380b11",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#dae6d4",
+                    "secondary-fixed-dim": "#becab8",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "background": "#fff8f3",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f6f0ea",
+                    "surface-bright": "#fff8f3",
+                    "on-tertiary-fixed": "#321200",
+                    "primary": "#5d292d",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#5a6657",
+                    "surface-tint": "#8a4d51",
+                    "surface-dim": "#dfd9d4",
+                    "surface-variant": "#e7e1dc",
+                    "tertiary": "#572f15",
+                    "surface-container-high": "#ede7e2",
+                    "on-secondary-fixed-variant": "#3f4a3c",
+                    "primary-container": "#793f43",
+                    "tertiary-fixed-dim": "#f7b995",
+                    "outline": "#857373",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "surface": "#fff8f3",
+                    "outline-variant": "#d7c2c2",
+                    "surface-container-highest": "#e7e1dc",
+                    "surface-container-low": "#f9f2ed",
+                    "tertiary-fixed": "#ffdbc8",
+                    "on-primary-container": "#fcaeb2",
+                    "on-primary-fixed-variant": "#6e363a",
+                    "primary-fixed": "#ffdada",
+                    "secondary": "#566253",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#f3ede8",
+                    "on-surface-variant": "#524343",
+                    "secondary-container": "#d7e3d1",
+                    "on-tertiary-fixed-variant": "#673c21",
+                    "inverse-surface": "#32302d",
+                    "on-surface": "#1d1b18",
+                    "on-background": "#1d1b18",
+                    "tertiary-container": "#724529",
+                    "on-tertiary-container": "#f3b592",
+                    "on-secondary-fixed": "#141e13",
+                    "inverse-primary": "#ffb3b6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "gutter": "24px",
+                    "container-max": "1200px",
+                    "section-gap": "120px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Bodoni Moda"
+                    ],
+                    "headline-sm": [
+                            "Bodoni Moda"
+                    ],
+                    "body-md": [
+                            "Libre Franklin"
+                    ],
+                    "body-lg": [
+                            "Libre Franklin"
+                    ],
+                    "label-caps": [
+                            "Libre Franklin"
+                    ],
+                    "display-lg-mobile": [
+                            "Bodoni Moda"
+                    ],
+                    "headline-md": [
+                            "Bodoni Moda"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "64px",
+                            {
+                                    "lineHeight": "72px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-sm": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .editorial-line {
+            height: 1px;
+            background-color: theme('colors.outline-variant');
+            width: 100%;
+        }
+
+        .service-row {
+            transition: background-color 0.4s ease;
+        }
+        .service-row:hover {
+            background-color: theme('colors.surface-container');
+        }
+
+        /* Custom Scrollbar for elegance */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface');
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-content.open {
+            max-height: 500px; /* Arbitrary large max-height for opening */
+        }
+        .accordion-icon {
+            transition: transform 0.4s ease;
+        }
+        .accordion-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 border-b border-outline-variant bg-surface transition-all ease-in-out duration-400">
+<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+<!-- Brand -->
+<a class="font-display-lg text-headline-sm text-primary tracking-tight" href="#">Dr. Rabiye Bulan</a>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center space-x-8">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Ana Sayfa</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Hakkında</a>
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1 transition-colors duration-300" href="#">Hizmetler</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Videolar</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">İletişim</a>
+</div>
+<!-- Actions -->
+<div class="hidden md:flex items-center space-x-6">
+<button class="font-label-caps text-label-caps text-on-surface hover:text-primary transition-colors duration-300 tracking-widest uppercase">
+                    Randevu Sorgula
+                </button>
+<button class="bg-primary text-on-primary px-6 py-3 font-label-caps text-label-caps tracking-widest uppercase hover:bg-primary-container transition-colors duration-300">
+                    Randevu Al
+                </button>
+</div>
+<!-- Mobile Menu Toggle (Decorative for this scope) -->
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="flex-grow pt-[120px] pb-section-gap">
+<!-- 1. Editorial Intro -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-end">
+<div class="md:col-span-7">
+<h1 class="font-display-lg text-display-lg text-primary mb-6">Hizmetler</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                        Estetik cerrahi, kişisel orantıların ve doğal güzelliğin bir yansımasıdır. Her bireyin anatomik yapısı benzersizdir; bu nedenle yaklaşımlarımız standart prosedürlerden ziyade, kapsamlı tıbbi değerlendirmelere dayanan kişiselleştirilmiş cerrahi planlamalar içerir.
+                    </p>
+</div>
+<div class="md:col-span-5 md:text-right hidden md:block">
+<p class="font-label-caps text-label-caps text-outline tracking-widest uppercase">Klinik Uzmanlık</p>
+</div>
+</div>
+<div class="editorial-line mt-12"></div>
+</section>
+<!-- 2. Category Navigation (Sticky) -->
+<div class="sticky top-20 z-40 bg-background/90 backdrop-blur-md border-b border-outline-variant/30 py-4 mb-section-gap">
+<div class="max-w-container-max mx-auto px-gutter flex justify-center space-x-12">
+<a class="font-label-caps text-label-caps text-primary border-b border-primary pb-1 tracking-widest uppercase transition-colors duration-300" href="#yuz">Yüz</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary tracking-widest uppercase transition-colors duration-300" href="#meme">Meme</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary tracking-widest uppercase transition-colors duration-300" href="#vucut">Vücut</a>
+</div>
+</div>
+<!-- 3. Service Category Sections -->
+<!-- Yüz Section -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap scroll-mt-32" id="yuz">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-16">
+<div class="md:col-span-5 relative h-96">
+<img class="w-full h-full object-cover" data-alt="A fine art style, soft focus black and white photograph of a woman's profile, highlighting natural facial proportions and elegance. The lighting is soft and ethereal, fitting a luxury medical editorial aesthetic with high contrast and smooth textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHg4yrqegxcPb8miZrBu_HR7xo-Kxj0WDqd5qXwS-VXOWowbCe0deG0BlYd1Au9Ufj71YYyHV7s5P2gs7w5U-yMg8rOgRJGKPmACl7txi_aMO-9XhaRelnEQIi__168JsIOql8orb2ykTFgxUkM-KLYT7IcG92E_2WBb3esyv3at-uFi-5Dmqtjodz2iZ1lLSL6sUhnQoPpuw364jxdLqpD8S62kHmCCfPQ2rt55URiiP4HtFQM735aQ"/>
+</div>
+<div class="md:col-span-6 md:col-start-7 flex flex-col justify-center">
+<h2 class="font-display-lg text-headline-md text-primary mb-4">Yüz Estetiği</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Yüz, kimliğimizin ve ifadelerimizin merkezidir. Yüz estetiği uygulamalarımız, karakteristik özelliklerinizi kaybetmeden, zamanın etkilerini hafifletmeyi ve orantısal dengeyi sağlamayı amaçlar.
+                    </p>
+</div>
+</div>
+<!-- Service List - Yüz -->
+<div class="border-t border-outline-variant">
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Burun Estetiği</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Rhinoplasty</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Solunum fonksiyonlarını koruyarak veya iyileştirerek, yüzün genel orantısına uygun estetik burun şekillendirmesi.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Yüz Germe</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Facelift</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Orta ve alt yüz bölgesindeki sarkmaları toparlayarak, daha dinç ve genç bir ifade kazandırma prosedürü.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Göz Kapağı Estetiği</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Blepharoplasty</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Üst ve alt göz kapaklarındaki fazla deri ve yağ dokusunun uzaklaştırılarak yorgun görünümün giderilmesi.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Meme Section -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap scroll-mt-32" id="meme">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-16 items-center">
+<div class="md:col-span-6 order-2 md:order-1 flex flex-col justify-center">
+<h2 class="font-display-lg text-headline-md text-primary mb-4">Meme Estetiği</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Vücut hatlarının bütünlüğünü sağlayan meme estetiği, hem fiziksel konforu artırmayı hem de estetik orantıyı yeniden kurmayı hedefler. Deneyimli yaklaşımımız, doğal bir form ve kalıcı sonuçlar odaklıdır.
+                    </p>
+</div>
+<div class="md:col-span-5 md:col-start-8 order-1 md:order-2 relative h-96">
+<img class="w-full h-full object-cover" data-alt="A minimalist architectural detail of smooth, curved white plaster casting soft shadows. The image implies gentle contours and structural support, evoking a serene, clinical luxury aesthetic aligned with bodily form." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwelTwLM0qwIwloPQ61_T1YDkYigal1f-hxH_xTAOy8DQ1E3OWDoFK7ht6L0P6ayNNCvmi7PvxX7xGVls1ltd1eTzJ37G8rWyYM3t9hMLc5s6x6PRqBmskU20T1qTfGdDTahj4aPug1ySMzBQBaAALad3ilUWr5mEB05tqtApLktzFXALDGVOsbmS90h3b7pOZ87DSuT2VErzOA9SKFPWB15g8y0L6jv8VsTmEUE-QhVbJr58g6u5icw"/>
+</div>
+</div>
+<!-- Service List - Meme -->
+<div class="border-t border-outline-variant">
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Meme Büyütme</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Breast Augmentation</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Vücut proporsiyonuna uygun FDA onaylı implantlar kullanılarak hacim ve form kazandırma işlemi.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Meme Dikleştirme</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Mastopexy</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Zamanla veya kilo değişimleriyle elastikiyetini kaybeden dokunun yeniden şekillendirilerek doğal bir formda toparlanması.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Meme Küçültme</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Breast Reduction</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Fiziksel şikayetlere neden olan fazla meme dokusunun alınarak, bedenin genel silüetiyle uyumlu, daha hafif bir yapı oluşturulması.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Vücut Section -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap scroll-mt-32" id="vucut">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-16">
+<div class="md:col-span-5 relative h-96">
+<img class="w-full h-full object-cover" data-alt="A soft focus, editorial style abstract composition showing draped silk fabric in warm ivory and deep burgundy tones. The cascading folds represent fluid bodily forms and graceful movement, set against a warm minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7VV1n4i2NFtcXI70L684w-4XZ-F8NCk8jnbWGDkpR9oxeiXbMkLeZlw0P9H4wDIrHeTyAm_Qgo0lwCZ36_hQZ8lNfIZFRpJT_NefTgj572Mu0bpzVN3DouIjO-PNVBVLF9g4-xB-Y5DE9RzAK2Y4svoj31cH-EJS3cg0x1X47Fv0NIGQG4aMBM2Lcg9dGT-QxRDRdrLKpo2u3HxO2h4IXI6DxJnwCN8s9zM5jdd83TyByo4VhPrf1_g"/>
+</div>
+<div class="md:col-span-6 md:col-start-7 flex flex-col justify-center">
+<h2 class="font-display-lg text-headline-md text-primary mb-4">Vücut Şekillendirme</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Sağlıklı bir yaşam tarzına rağmen giderilemeyen bölgesel fazlalıklar veya sarkmalar için geliştirilmiş cerrahi çözümler. Vücut hatlarını rafine ederek estetik bir silüet yaratıyoruz.
+                    </p>
+</div>
+</div>
+<!-- Service List - Vücut -->
+<div class="border-t border-outline-variant">
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Liposuction</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Fat Removal</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">İnatçı bölgesel yağ birikimlerinin modern yöntemlerle uzaklaştırılarak vücut konturlarının belirginleştirilmesi.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="service-row py-8 border-b border-outline-variant px-4 group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Karın Germe</h3>
+<span class="font-label-caps text-label-caps text-outline mt-1 block">Abdominoplasty</span>
+</div>
+<div class="md:col-span-7">
+<p class="font-body-md text-body-md text-on-surface-variant">Doğum veya aşırı kilo kaybı sonrası sarkan karın cildinin ve zayıflayan karın duvarı kaslarının onarılması.</p>
+</div>
+<div class="md:col-span-1 text-right text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Support Panel -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap">
+<div class="bg-surface-container-high p-12 md:p-16 text-center border border-outline-variant/30 flex flex-col items-center justify-center">
+<h3 class="font-display-lg text-headline-md text-primary mb-6">Hangi işlemin size uygun olduğundan emin değil misiniz?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto mb-8">
+                    Her estetik yolculuk benzersizdir. Kapsamlı bir medikal değerlendirme ve beklentilerinizin analiz edilmesi için bir konsültasyon planlayabilirsiniz.
+                </p>
+<a class="inline-flex items-center space-x-2 text-primary font-label-caps text-label-caps tracking-widest uppercase border-b-2 border-transparent hover:border-primary transition-colors duration-300 pb-1" href="#">
+<span>Ön Görüşme Planlayın</span>
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+</a>
+</div>
+</section>
+<!-- 5. FAQ -->
+<section class="max-w-container-max mx-auto px-gutter mb-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4">
+<h2 class="font-display-lg text-headline-sm text-primary mb-4">Sıkça Sorulan Sorular</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Operasyon süreçleri ve iyileşme dönemi hakkında merak edilenler.</p>
+</div>
+<div class="md:col-span-8">
+<!-- Accordion Item 1 -->
+<div class="border-b border-outline-variant py-6">
+<button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleAccordion('faq1')">
+<span class="font-headline-sm text-headline-sm text-on-surface">İyileşme süreci ne kadar sürer?</span>
+<span class="material-symbols-outlined text-primary accordion-icon" id="icon-faq1">expand_more</span>
+</button>
+<div class="accordion-content mt-4" id="faq1">
+<p class="font-body-md text-body-md text-on-surface-variant pr-8">
+                                İyileşme süresi uygulanan prosedüre göre değişiklik göstermekle birlikte, hastalarımızın büyük bir kısmı 7 ila 10 gün içerisinde günlük rutinlerine dönebilmektedir. Tam doku iyileşmesi ve nihai sonuçların ortaya çıkması birkaç ayı bulabilir.
+                            </p>
+</div>
+</div>
+<!-- Accordion Item 2 -->
+<div class="border-b border-outline-variant py-6">
+<button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleAccordion('faq2')">
+<span class="font-headline-sm text-headline-sm text-on-surface">Operasyonlar nerede gerçekleştiriliyor?</span>
+<span class="material-symbols-outlined text-primary accordion-icon" id="icon-faq2">expand_more</span>
+</button>
+<div class="accordion-content mt-4" id="faq2">
+<p class="font-body-md text-body-md text-on-surface-variant pr-8">
+                                Tüm cerrahi müdahaleler, JCI (Joint Commission International) akreditasyonuna sahip, en üst düzey güvenlik protokollerinin uygulandığı tam donanımlı anlaşmalı hastanelerde gerçekleştirilmektedir.
+                            </p>
+</div>
+</div>
+<!-- Accordion Item 3 -->
+<div class="border-b border-outline-variant py-6">
+<button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleAccordion('faq3')">
+<span class="font-headline-sm text-headline-sm text-on-surface">Konsültasyon sürecinde neler konuşuluyor?</span>
+<span class="material-symbols-outlined text-primary accordion-icon" id="icon-faq3">expand_more</span>
+</button>
+<div class="accordion-content mt-4" id="faq3">
+<p class="font-body-md text-body-md text-on-surface-variant pr-8">
+                                İlk görüşmemizde genel tıbbi geçmişiniz değerlendirilir, estetik hedefleriniz detaylıca dinlenir ve anatomik yapınıza en uygun cerrahi veya cerrahi olmayan seçenekler size sunulur. Olası sonuçlar ve süreç şeffaf bir şekilde aktarılır.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-inverse-surface w-full pt-section-gap pb-base border-t border-on-surface-variant/20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-gutter max-w-container-max mx-auto mb-16">
+<!-- Brand -->
+<div class="md:col-span-1">
+<div class="font-display-lg text-headline-md text-surface-bright mb-4">Dr. Rabiye Bulan</div>
+<p class="font-body-md text-body-md text-surface-variant/80">Estetik ve Plastik Cerrahi</p>
+</div>
+<!-- Links Group 1 -->
+<div class="md:col-span-1 flex flex-col space-y-3">
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Ana Sayfa</a>
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Hakkında</a>
+<a class="font-body-md text-body-md text-surface-bright font-bold" href="#">Hizmetler</a>
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Videolar</a>
+</div>
+<!-- Links Group 2 -->
+<div class="md:col-span-1 flex flex-col space-y-3">
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">İletişim</a>
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Gizlilik Politikası</a>
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">KVKK Aydınlatma Metni</a>
+</div>
+<!-- Links Group 3 -->
+<div class="md:col-span-1 flex flex-col space-y-3">
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Çerez Politikası</a>
+<a class="font-body-md text-body-md text-surface-variant/80 hover:text-surface-bright transition-colors duration-300" href="#">Personel Girişi</a>
+</div>
+</div>
+<div class="px-gutter max-w-container-max mx-auto text-center border-t border-on-surface-variant/10 pt-8">
+<p class="font-body-md text-body-md text-surface-variant/60">© 2024 Dr. Rabiye Bulan. Tüm Hakları Saklıdır.</p>
+</div>
+</footer>
+<script>
+        // Simple Accordion Logic
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.classList.remove('open');
+            } else {
+                // Close others (optional)
+                document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
+                document.querySelectorAll('.accordion-icon').forEach(el => el.classList.remove('open'));
+                
+                content.classList.add('open');
+                icon.classList.add('open');
+            }
+        }
+
+        // Active state for sticky category nav on scroll
+        window.addEventListener('scroll', () => {
+            const sections = ['yuz', 'meme', 'vucut'];
+            const navLinks = document.querySelectorAll('.sticky a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    // Offset for sticky header
+                    if (rect.top <= 200) {
+                        current = section;
+                    }
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-primary', 'border-b', 'border-primary', 'pb-1');
+                link.classList.add('text-on-surface-variant');
+                
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('text-on-surface-variant');
+                    link.classList.add('text-primary', 'border-b', 'border-primary', 'pb-1');
+                }
+            });
+        });
+    </script>
+</body></html>

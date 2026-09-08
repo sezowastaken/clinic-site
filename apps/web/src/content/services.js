@@ -2,6 +2,7 @@ export const services = [
   {
     slug: "rhinoplasty",
     title: "Burun Estetiği (Rhinoplasty)",
+    category: "Yüz",
     desc: "Yüzünüzle uyumlu, dengeli ve doğal bir burun profili oluşturma.",
     homeDesc: "Yüzle uyumlu, doğal ve dengeli bir burun profili.",
     src: "/assets/services/rhinoplasty.png",
@@ -11,6 +12,7 @@ export const services = [
   {
     slug: "breast-augmentation",
     title: "Meme Büyütme",
+    category: "Meme",
     desc: "Doğal hatları koruyarak daha dolgun ve dengeli bir görünüm.",
     homeDesc: "Doğal hatları koruyarak özgüveni artıran sonuçlar.",
     src: "/assets/services/breast-augmentation.png",
@@ -20,6 +22,7 @@ export const services = [
   {
     slug: "liposuction",
     title: "Liposuction",
+    category: "Vücut",
     desc: "Vücut şekillendirme için belirli bölgelerdeki inatçı yağların azaltılması.",
     homeDesc: "Vücut şekillendirme ve inatçı yağların azaltılması.",
     src: "/assets/services/liposuction.png",
@@ -29,6 +32,7 @@ export const services = [
   {
     slug: "facelift",
     title: "Yüz Germe (Facelift)",
+    category: "Yüz",
     desc: "Kırışıklık ve sarkmaları azaltarak daha genç ve dinç bir ifade.",
     homeDesc: "Daha genç, dinç ve taze bir yüz görünümü.",
     src: "/assets/services/facelift.png",
@@ -38,6 +42,7 @@ export const services = [
   {
     slug: "tummy-tuck",
     title: "Karın Germe (Tummy Tuck)",
+    category: "Vücut",
     desc: "Fazla deri ve yağın azaltılması ile daha düz ve sıkı karın görünümü.",
     src: "/assets/services/tummy-tuck.png",
     alt: "Karın germeyi çağrıştıran illüstrasyon",
@@ -46,9 +51,35 @@ export const services = [
   {
     slug: "blepharoplasty",
     title: "Göz Kapağı Estetiği",
+    category: "Yüz",
     desc: "Üst ve alt göz kapaklarındaki fazla deri/yağın giderilmesi ile daha canlı bir bakış.",
     src: "/assets/services/eyelid-surgery.png",
     alt: "Göz kapağı estetiğini çağrıştıran görsel",
     featuredOnHome: false,
+  },
+];
+
+/** Kategori sırası ve tanıtım metinleri (Hizmetler sayfası düzeni için). */
+export const serviceCategories = [
+  {
+    id: "yuz",
+    name: "Yüz",
+    desc: "Yüz kimliğinizin ve ifadelerinizin merkezidir. Yüz estetiği uygulamalarımız, karakteristik özelliklerinizi kaybetmeden zamansal ve dengeli bir sonucu hedefler.",
+    image: "/assets/services/facelift.png",
+    imageAlt: "Yüz estetiğini çağrıştıran görsel",
+  },
+  {
+    id: "meme",
+    name: "Meme",
+    desc: "Vücut hatlarını bütünlüğünü sağlayan meme estetiği; hem fiziksel konforu hem estetik dengeyi gözeten, doğal form odaklı bir yaklaşım.",
+    image: "/assets/services/breast-augmentation.png",
+    imageAlt: "Meme estetiğini çağrıştıran görsel",
+  },
+  {
+    id: "vucut",
+    name: "Vücut",
+    desc: "Sağlıklı bir yaşam tarzına rağmen giderilemeyen bölgesel fazlalıklar veya sarkmalar için, cerrahi çözümlerle vücut hatlarına odaklanan bir şekillendirme.",
+    image: "/assets/services/liposuction.png",
+    imageAlt: "Vücut şekillendirmeyi çağrıştıran görsel",
   },
 ];

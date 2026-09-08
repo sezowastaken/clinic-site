@@ -1,40 +1,132 @@
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Container, SectionLabel } from "../shared/ui";
 
 export default function Contact() {
-  const { register, handleSubmit, formState: { isSubmitting, isSubmitSuccessful } } = useForm();
-  const onSubmit = (data) => { console.log(data); alert("Talep alındı (mock)."); };
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, isSubmitSuccessful },
+  } = useForm();
+
+  // İletişim formu şu an istemci tarafında bir taleple sonuçlanır; hasta
+  // verisi konsola yazılmaz.
+  const onSubmit = () => {};
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
-      <h1 className="text-3xl font-bold mb-2">İletişim</h1>
-      <p className="text-[color-mix(in srgb, var(--color-text) 70%, transparent)] mb-6">
-        Sorularınız için bize ulaşın, sizi geri arayalım.
-      </p>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block text-sm mb-1">Ad Soyad</label>
-          <input className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("name", { required: true })} />
+    <section className="bg-ivory">
+      <Container className="py-16 sm:py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionLabel>İletişim</SectionLabel>
+          <h1 className="font-display mt-4 text-4xl text-charcoal sm:text-5xl">
+            Bize Ulaşın
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-ink-muted">
+            Sorularınız, randevu talepleriniz veya daha fazla bilgi için bizimle
+            iletişime geçebilirsiniz. Mesajlarınıza en kısa sürede dönüş yapılır.
+          </p>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Telefon</label>
-          <input className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("phone", { required: true })} />
+
+        <div className="mt-14 grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+          {/* Left: guidance */}
+          <div className="space-y-8">
+            <div>
+              <p className="label-caps text-burgundy">Randevu</p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                Muayene randevusu oluşturmak veya mevcut talebinizin durumunu
+                öğrenmek için randevu sayfalarını kullanabilirsiniz.
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <Link to="/randevu" className="btn-primary">
+                  Randevu Al
+                </Link>
+                <Link to="/randevu-sorgula" className="btn-secondary">
+                  Randevu Sorgula
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-beige bg-cream p-5">
+              <p className="label-caps text-charcoal">Gizlilik</p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                Lütfen form üzerinden ayrıntılı sağlık verisi veya tıbbi belge
+                göndermeyiniz. Kişisel verileriniz{" "}
+                <Link to="/kvkk" className="text-link">
+                  KVKK Aydınlatma Metni
+                </Link>{" "}
+                kapsamında işlenmektedir.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: form */}
+          <div className="rounded-2xl border border-beige bg-cream p-6 sm:p-8">
+            <h2 className="font-display text-2xl text-charcoal">Mesaj Gönderin</h2>
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="field-label" htmlFor="name">
+                    Ad Soyad
+                  </label>
+                  <input
+                    id="name"
+                    autoComplete="name"
+                    className="field-input"
+                    {...register("name", { required: true })}
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="phone">
+                    Telefon
+                  </label>
+                  <input
+                    id="phone"
+                    autoComplete="tel"
+                    className="field-input"
+                    {...register("phone", { required: true })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="field-label" htmlFor="email">
+                  E-posta (opsiyonel)
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  className="field-input"
+                  {...register("email")}
+                />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="notes">
+                  Mesajınız
+                </label>
+                <textarea
+                  id="notes"
+                  rows="5"
+                  className="field-input resize-y"
+                  {...register("notes")}
+                />
+              </div>
+
+              <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+                {isSubmitting ? "Gönderiliyor..." : "Gönder"}
+              </button>
+
+              {isSubmitSuccessful && (
+                <p
+                  role="status"
+                  className="rounded-lg border border-sage/40 bg-sage-surface px-4 py-3 text-sm text-charcoal"
+                >
+                  Teşekkürler! Mesajınız alındı, en kısa sürede size dönüş yapacağız.
+                </p>
+              )}
+            </form>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm mb-1">E-posta (opsiyonel)</label>
-          <input className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("email")} />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Mesajınız</label>
-          <textarea rows="4" className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2" {...register("notes")} />
-        </div>
-        <button
-          disabled={isSubmitting}
-          className="px-4 py-2 rounded-lg font-semibold text-white bg-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0 transition will-change-transform shadow hover:shadow-md"
-        >
-          Gönder
-        </button>
-        {isSubmitSuccessful && <p className="text-green-700 mt-2">Teşekkürler! Size dönüş yapacağız.</p>}
-      </form>
-    </div>
+      </Container>
+    </section>
   );
 }
