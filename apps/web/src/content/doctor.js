@@ -1,5 +1,5 @@
 export const doctor = {
-  name: "Dr. Rabiye Bulan",
+  name: "Dr. Rabiye Haydin",
   title: "Board-Sertifikalı Estetik Cerrah",
-  photo: "/assets/general/rabiyebulan.jpg",
+  photo: "/assets/general/rabiyehaydin.jpg",
 };
